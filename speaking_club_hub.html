@@ -3400,15 +3400,21 @@ function testShowAdmin() {
   const listEl = document.getElementById('test-admin-list');
   listEl.innerHTML = '<p style="font-size:13px;color:var(--muted);">Loading…</p>';
 
+  const localResults = JSON.parse(localStorage.getItem('test_all_results') || '[]');
+
   db.collection('test_results').get()
     .then(snapshot => {
-      const results = snapshot.docs.map(d => d.data());
-      renderAdminList(results);
+      const firestoreResults = snapshot.docs.map(d => d.data());
+      // Merge: Firestore wins if same email+testId exists in both
+      const merged = [...firestoreResults];
+      localResults.forEach(lr => {
+        const exists = merged.find(r => r.email === lr.email && r.testId === lr.testId);
+        if (!exists) merged.push(lr);
+      });
+      renderAdminList(merged);
     })
     .catch(() => {
-      // Firestore unavailable — fall back to localStorage
-      const results = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-      renderAdminList(results);
+      renderAdminList(localResults);
     });
 }
 

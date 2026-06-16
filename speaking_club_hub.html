@@ -615,6 +615,13 @@
     vertical-align: middle; margin-right: 6px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
 </style>
 </head>
 <body>
@@ -3296,15 +3303,23 @@ function testRenderQuestion() {
       <textarea id="test-open-answer" class="test-open-textarea" placeholder="${q.placeholder}" oninput="testHandleOpenInput(this)"></textarea>
       <div class="test-open-footer">
         <span class="test-word-hint" id="test-word-count">0 / min ${q.minWords} words</span>
-        <span class="test-paste-warn" id="test-paste-warn">⚠️ Paste detected — will be flagged for admin</span>
+        <span class="test-paste-warn" id="test-paste-warn">⛔ Pasting is not allowed — type your answer manually</span>
       </div>`;
+    document.getElementById('test-next-btn').style.display = 'block';
+    const isLast = testState.currentQ === TEST_QUESTIONS.length - 1;
+    document.getElementById('test-next-btn').textContent = isLast ? 'See results →' : 'Next →';
     setTimeout(() => {
       const ta = document.getElementById('test-open-answer');
       if (!ta) return;
-      ta.addEventListener('paste', () => {
+      ta.addEventListener('paste', e => {
+        e.preventDefault();
         testState.pasteDetected = true;
         ta.classList.add('paste-detected');
         document.getElementById('test-paste-warn').classList.add('show');
+        // Brief shake animation
+        ta.style.animation = 'none';
+        ta.offsetHeight;
+        ta.style.animation = 'shake .3s ease';
       });
     }, 50);
   } else {
@@ -3316,12 +3331,8 @@ function testRenderQuestion() {
 
 function testHandleOpenInput(ta) {
   const words = ta.value.trim().split(/\s+/).filter(w => w.length > 0).length;
-  const q = TEST_QUESTIONS[testState.currentQ];
-  document.getElementById('test-word-count').textContent = `${words} / min ${q.minWords} words`;
-  const ready = words >= q.minWords;
-  const btn = document.getElementById('test-next-btn');
-  btn.style.display = ready ? 'block' : 'none';
-  if (ready) testState.answered = true;
+  document.getElementById('test-word-count').textContent = `${words} words`;
+  testState.answered = true;
 }
 
 function testSelectAnswer(idx) {

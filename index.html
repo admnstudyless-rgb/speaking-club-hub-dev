@@ -3303,6 +3303,19 @@ function testLogout() {
   localStorage.removeItem('test_teacher_email');
   document.getElementById('test-name').value = '';
   document.getElementById('test-email').value = '';
+  // Reset all admin/personal UI
+  document.getElementById('test-admin-section').style.display = 'none';
+  document.getElementById('test-admin-list').innerHTML = '';
+  document.getElementById('test-admin-btn-wrap').style.display = 'none';
+  document.getElementById('my-answers-section').style.display = 'none';
+  document.getElementById('test-review-notification').style.display = 'none';
+  // Reset test card to default state
+  const card = document.getElementById('test-card-1');
+  card.classList.remove('done');
+  card.style.cursor = 'pointer';
+  card.querySelector('.test-card-arrow').textContent = '→';
+  const badge = card.querySelector('.test-done-badge');
+  if (badge) badge.remove();
   testShowScreen('test-screen-register');
 }
 

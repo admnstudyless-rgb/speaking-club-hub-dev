@@ -579,6 +579,20 @@
   .test-reco-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; line-height: 1.5; }
   .test-reco-item:last-child { border-bottom: none; }
   .test-reco-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; margin-top: 6px; }
+  .test-open-textarea {
+    width: 100%; min-height: 140px; padding: 14px 16px;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    font-size: 14px; font-family: inherit; line-height: 1.6;
+    resize: vertical; outline: none; transition: border-color .2s;
+    background: white;
+  }
+  .test-open-textarea:focus { border-color: var(--blue); }
+  .test-open-textarea.paste-detected { border-color: #EF4444; }
+  .test-open-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .test-paste-warn { display: none; color: #EF4444; font-size: 12px; font-weight: 600; }
+  .test-paste-warn.show { display: inline; }
+  .test-word-hint { font-size: 12px; color: var(--muted); }
+
   .test-answers-list { margin-top: 8px; }
   .test-answer-row {
     display: flex; gap: 12px; align-items: flex-start;
@@ -3121,6 +3135,27 @@ const TEST_QUESTIONS = [
     ],
     correct: 2,
     module: 'Live Triggers'
+  },
+  {
+    type: 'open',
+    q: 'Describe a real situation from your teaching experience: a student went completely silent during the Main Discussion. What exactly did you say or do?',
+    placeholder: 'Write your answer here... (minimum 20 words)',
+    minWords: 20,
+    module: 'Emergency FAQ'
+  },
+  {
+    type: 'open',
+    q: 'How do you make sure all students get equal speaking time? Give a specific example from one of your actual lessons.',
+    placeholder: 'Write your answer here... (minimum 20 words)',
+    minWords: 20,
+    module: 'Stage-by-Stage Guide'
+  },
+  {
+    type: 'open',
+    q: 'Which trigger type do you use most often with your groups and why? Write the exact words you say to students at the very start of a lesson.',
+    placeholder: 'Write your answer here... (minimum 20 words)',
+    minWords: 20,
+    module: 'Live Triggers'
   }
 ];
 
@@ -3240,20 +3275,53 @@ function testStart(id) {
 function testRenderQuestion() {
   const q = TEST_QUESTIONS[testState.currentQ];
   const total = TEST_QUESTIONS.length;
+  const mcTotal = TEST_QUESTIONS.filter(q => q.type !== 'open').length;
   const num = testState.currentQ + 1;
 
   document.getElementById('test-progress').style.width = ((num - 1) / total * 100) + '%';
-  document.getElementById('test-q-num').textContent = `Question ${num} of ${total}`;
+  document.getElementById('test-q-num').textContent = q.type === 'open'
+    ? `Open question ${num - mcTotal} of ${total - mcTotal}`
+    : `Question ${num} of ${mcTotal}`;
   document.getElementById('test-q-text').textContent = q.q;
   document.getElementById('test-next-btn').style.display = 'none';
 
-  const optionsEl = document.getElementById('test-q-options');
-  optionsEl.innerHTML = q.options.map((opt, i) =>
-    `<button class="test-option" id="test-opt-${i}" onclick="testSelectAnswer(${i})">${opt}</button>`
-  ).join('');
-
   testState.selectedAnswer = null;
   testState.answered = false;
+  testState.pasteDetected = false;
+
+  const optionsEl = document.getElementById('test-q-options');
+
+  if (q.type === 'open') {
+    optionsEl.innerHTML = `
+      <textarea id="test-open-answer" class="test-open-textarea" placeholder="${q.placeholder}" oninput="testHandleOpenInput(this)"></textarea>
+      <div class="test-open-footer">
+        <span class="test-word-hint" id="test-word-count">0 / min ${q.minWords} words</span>
+        <span class="test-paste-warn" id="test-paste-warn">⚠️ Paste detected — will be flagged for admin</span>
+      </div>`;
+    setTimeout(() => {
+      const ta = document.getElementById('test-open-answer');
+      if (!ta) return;
+      ta.addEventListener('paste', () => {
+        testState.pasteDetected = true;
+        ta.classList.add('paste-detected');
+        document.getElementById('test-paste-warn').classList.add('show');
+      });
+    }, 50);
+  } else {
+    optionsEl.innerHTML = q.options.map((opt, i) =>
+      `<button class="test-option" id="test-opt-${i}" onclick="testSelectAnswer(${i})">${opt}</button>`
+    ).join('');
+  }
+}
+
+function testHandleOpenInput(ta) {
+  const words = ta.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const q = TEST_QUESTIONS[testState.currentQ];
+  document.getElementById('test-word-count').textContent = `${words} / min ${q.minWords} words`;
+  const ready = words >= q.minWords;
+  const btn = document.getElementById('test-next-btn');
+  btn.style.display = ready ? 'block' : 'none';
+  if (ready) testState.answered = true;
 }
 
 function testSelectAnswer(idx) {
@@ -3276,6 +3344,17 @@ function testSelectAnswer(idx) {
 }
 
 function testNext() {
+  const q = TEST_QUESTIONS[testState.currentQ];
+  if (q.type === 'open') {
+    const ta = document.getElementById('test-open-answer');
+    const text = ta ? ta.value.trim() : '';
+    const words = text.split(/\s+/).filter(w => w.length > 0).length;
+    testState.answers.push({
+      type: 'open', q: q.q, text, words,
+      pasteDetected: testState.pasteDetected,
+      module: q.module
+    });
+  }
   if (testState.currentQ < TEST_QUESTIONS.length - 1) {
     testState.currentQ++;
     testRenderQuestion();
@@ -3285,7 +3364,8 @@ function testNext() {
 }
 
 function testShowResults() {
-  const score = testState.answers.filter(a => a.selected === a.correct).length;
+  const score = testState.answers.filter(a => a.type !== 'open' && a.selected === a.correct).length;
+  const mcTotal = TEST_QUESTIONS.filter(q => q.type !== 'open').length;
   const name = localStorage.getItem('test_teacher_name') || 'Teacher';
   const email = localStorage.getItem('test_teacher_email') || '';
 
@@ -3319,6 +3399,7 @@ function testShowResults() {
   circle.style.borderColor = reco.color;
   circle.style.background = reco.bg;
   circle.querySelector('.score-num').textContent = score;
+  circle.querySelector('.score-label').textContent = `out of ${mcTotal}`;
   circle.querySelector('.score-num').style.color = reco.color;
 
   document.getElementById('test-result-title').textContent = reco.title;
@@ -3329,6 +3410,16 @@ function testShowResults() {
   ).join('');
 
   document.getElementById('test-answers-list').innerHTML = testState.answers.map((a, i) => {
+    if (a.type === 'open') {
+      return `<div class="test-answer-row">
+        <span class="test-ans-icon">📝</span>
+        <div class="test-ans-body">
+          <div class="test-ans-q">${a.q}</div>
+          <div style="margin-top:6px;padding:10px 12px;background:#F9FAFB;border-radius:8px;font-size:13px;color:#374151;line-height:1.6;">${a.text}</div>
+          ${a.pasteDetected ? `<div style="margin-top:4px;font-size:12px;color:#EF4444;font-weight:600;">⚠️ Paste detected</div>` : ''}
+        </div>
+      </div>`;
+    }
     const isRight = a.selected === a.correct;
     return `<div class="test-answer-row">
       <span class="test-ans-icon">${isRight ? '✅' : '❌'}</span>
@@ -3361,7 +3452,18 @@ function renderAdminList(results) {
   results.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
   document.getElementById('test-admin-list').innerHTML = results.map((r, i) => {
     const scoreColor = r.score>=9?'#10B981':r.score>=7?'#3B82F6':r.score>=5?'#F59E0B':'#EF4444';
+    const pasteCount = (r.answers || []).filter(a => a.pasteDetected).length;
     const answersHtml = (r.answers || []).map((a, qi) => {
+      if (a.type === 'open') {
+        return `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #F3F4F6;font-size:12.5px;line-height:1.5;">
+          <span style="flex-shrink:0;margin-top:1px;">📝</span>
+          <div style="flex:1;">
+            <div style="font-weight:600;color:#111827;margin-bottom:4px;">${a.q}</div>
+            <div style="padding:8px 10px;background:#F9FAFB;border-radius:7px;color:#374151;font-size:12px;line-height:1.6;">${a.text || '—'}</div>
+            ${a.pasteDetected ? `<div style="margin-top:4px;color:#EF4444;font-size:11px;font-weight:700;">⚠️ PASTE DETECTED</div>` : ''}
+          </div>
+        </div>`;
+      }
       const isRight = a.selected === a.correct;
       return `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #F3F4F6;font-size:12.5px;line-height:1.5;">
         <span style="flex-shrink:0;margin-top:1px;">${isRight ? '✅' : '❌'}</span>
@@ -3384,6 +3486,7 @@ function renderAdminList(results) {
           <div style="font-size:14px;font-weight:700;">${r.name}</div>
           <div style="font-size:12px;color:var(--muted);">${r.email} · ${r.date}</div>
         </div>
+        ${pasteCount > 0 ? `<div style="font-size:11px;font-weight:700;color:#EF4444;background:#FEF2F2;border:1px solid #FECACA;border-radius:20px;padding:3px 9px;">⚠️ ${pasteCount} paste</div>` : ''}
         <div style="font-size:13px;font-weight:700;color:${scoreColor};">${r.score}/10</div>
         <span class="adm-arrow" style="color:var(--muted);font-size:13px;transition:transform .2s;flex-shrink:0;">›</span>
       </div>

@@ -2312,6 +2312,11 @@
           <span style="font-size:13px;font-weight:700;" id="test-list-name"></span>
           <button onclick="testLogout()" style="margin-left:12px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">Change</button>
         </div>
+        <div id="test-review-notification" style="display:none;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:14px;padding:16px 20px;margin-bottom:16px;cursor:pointer;" onclick="testShowReview()">
+          <div style="font-size:14px;font-weight:700;color:#065F46;">✅ Your open answers have been reviewed!</div>
+          <div style="font-size:12px;color:#047857;margin-top:3px;">Click to see feedback and your average score →</div>
+        </div>
+
         <div class="test-list">
           <div class="test-card" id="test-card-1" onclick="testStart(1)">
             <div class="test-card-icon">📚</div>
@@ -2333,6 +2338,20 @@
         </div>
         <div id="test-admin-btn-wrap" style="display:none;margin-top:24px;text-align:center;">
           <button onclick="testShowAdmin()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">View all results (admin)</button>
+        </div>
+      </div>
+
+      <!-- SCREEN 2.5: Open questions warning -->
+      <div class="test-screen" id="test-screen-open-warning">
+        <div style="max-width:520px;margin:0 auto;text-align:center;padding:20px 0;">
+          <div style="width:64px;height:64px;background:#FEF2F2;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;">✍️</div>
+          <h2 style="font-size:22px;font-weight:800;margin-bottom:12px;">Open questions</h2>
+          <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px;">The next 3 questions require a written answer based on your personal teaching experience.</p>
+          <div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:14px;padding:20px 24px;text-align:left;margin-bottom:32px;">
+            <div style="font-size:13px;font-weight:800;color:#DC2626;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">⛔ Important</div>
+            <p style="font-size:14px;color:#7F1D1D;line-height:1.7;margin:0;">Write your answer <strong>independently and manually</strong>. A paste detector is active — if you try to paste text from any source, the answer field will be blocked and flagged for admin review.</p>
+          </div>
+          <button class="btn btn-primary" style="width:100%;font-size:15px;padding:14px;" onclick="testShowScreen('test-screen-taking');testRenderQuestion();">I understand — continue →</button>
         </div>
       </div>
 
@@ -2370,6 +2389,16 @@
           <button class="btn btn-primary" onclick="testRetake()">Retake test</button>
           <button class="btn" style="background:var(--bg);border:1.5px solid var(--border);" onclick="testBackToList()">← Back to tests</button>
         </div>
+      </div>
+
+      <!-- SCREEN 5: Teacher sees admin review -->
+      <div class="test-screen" id="test-screen-review">
+        <button class="back-btn" onclick="testBackToList()">← Back to tests</button>
+        <div style="background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+          <div style="font-size:15px;font-weight:700;color:#065F46;margin-bottom:4px;">✅ Your open answers have been reviewed</div>
+          <div style="font-size:13px;color:#047857;">Average score for open questions: <strong id="review-avg-score"></strong>/10</div>
+        </div>
+        <div id="teacher-review-list"></div>
       </div>
 
     </section>
@@ -3302,7 +3331,7 @@ function testRenderQuestion() {
     optionsEl.innerHTML = `
       <textarea id="test-open-answer" class="test-open-textarea" placeholder="${q.placeholder}" oninput="testHandleOpenInput(this)"></textarea>
       <div class="test-open-footer">
-        <span class="test-word-hint" id="test-word-count">0 / min ${q.minWords} words</span>
+        <span></span>
         <span class="test-paste-warn" id="test-paste-warn">⛔ Pasting is not allowed — type your answer manually</span>
       </div>`;
     document.getElementById('test-next-btn').style.display = 'block';
@@ -3367,8 +3396,17 @@ function testNext() {
       module: q.module
     });
   }
-  if (testState.currentQ < TEST_QUESTIONS.length - 1) {
-    testState.currentQ++;
+  const nextIdx = testState.currentQ + 1;
+  // Show warning screen before first open question
+  const nextQ = TEST_QUESTIONS[nextIdx];
+  const isFirstOpen = nextQ && nextQ.type === 'open' && TEST_QUESTIONS[testState.currentQ].type !== 'open';
+  if (isFirstOpen) {
+    testState.currentQ = nextIdx;
+    testShowScreen('test-screen-open-warning');
+    return;
+  }
+  if (nextIdx < TEST_QUESTIONS.length) {
+    testState.currentQ = nextIdx;
     testRenderQuestion();
   } else {
     testShowResults();
@@ -3467,12 +3505,25 @@ function renderAdminList(results) {
     const pasteCount = (r.answers || []).filter(a => a.pasteDetected).length;
     const answersHtml = (r.answers || []).map((a, qi) => {
       if (a.type === 'open') {
+        const openIdx = qi - (r.answers || []).filter((x,xi) => xi < qi && x.type !== 'open').length;
+        const existingRev = (r.reviews || {})[`open_${openIdx}`];
+        const revForm = existingRev
+          ? `<div class="rev-form" style="margin-top:8px;"><span style="color:#059669;font-size:13px;font-weight:600;">✓ Score: ${existingRev.score}/10</span>${existingRev.comment ? `<div style="font-size:12px;color:#6B7280;margin-top:3px;">${existingRev.comment}</div>` : ''}</div>`
+          : `<div class="rev-form" style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
+              <textarea id="rev-comment-${openIdx}" placeholder="Admin comment (optional)" style="width:100%;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;min-height:56px;outline:none;"></textarea>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <label style="font-size:12px;font-weight:600;color:var(--muted);">Score:</label>
+                <input type="number" id="rev-score-${openIdx}" min="1" max="10" placeholder="1–10" style="width:64px;padding:6px 8px;border:1.5px solid #E5E7EB;border-radius:7px;font-size:13px;font-weight:700;outline:none;">
+                <button onclick="saveAdminReview('${r.email.replace(/[^a-z0-9]/gi,'_')}_test1', ${openIdx}, this)" style="padding:6px 14px;background:#3B82F6;color:white;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Save</button>
+              </div>
+            </div>`;
         return `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #F3F4F6;font-size:12.5px;line-height:1.5;">
           <span style="flex-shrink:0;margin-top:1px;">📝</span>
           <div style="flex:1;">
             <div style="font-weight:600;color:#111827;margin-bottom:4px;">${a.q}</div>
             <div style="padding:8px 10px;background:#F9FAFB;border-radius:7px;color:#374151;font-size:12px;line-height:1.6;">${a.text || '—'}</div>
             ${a.pasteDetected ? `<div style="margin-top:4px;color:#EF4444;font-size:11px;font-weight:700;">⚠️ PASTE DETECTED</div>` : ''}
+            ${revForm}
           </div>
         </div>`;
       }
@@ -3507,6 +3558,79 @@ function renderAdminList(results) {
       </div>
     </div>`;
   }).join('');
+}
+
+function saveAdminReview(docId, openIdx, btnEl) {
+  const comment = document.getElementById(`rev-comment-${openIdx}`).value.trim();
+  const score = parseInt(document.getElementById(`rev-score-${openIdx}`).value);
+  if (!score || score < 1 || score > 10) {
+    alert('Enter a score from 1 to 10');
+    return;
+  }
+  btnEl.textContent = 'Saving…';
+  btnEl.disabled = true;
+  const update = {};
+  update[`reviews.open_${openIdx}`] = { comment, score, reviewedAt: new Date().toISOString() };
+  // Check how many open questions total to decide if all reviewed
+  const openCount = TEST_QUESTIONS.filter(q => q.type === 'open').length;
+  db.collection('test_results').doc(docId).get().then(doc => {
+    const data = doc.data();
+    const existingReviews = data.reviews || {};
+    existingReviews[`open_${openIdx}`] = { comment, score };
+    const reviewedCount = Object.keys(existingReviews).length;
+    if (reviewedCount >= openCount) {
+      const avg = Object.values(existingReviews).reduce((s, r) => s + r.score, 0) / reviewedCount;
+      update.reviewed = true;
+      update.averageOpenScore = Math.round(avg * 10) / 10;
+    }
+    return db.collection('test_results').doc(docId).update(update);
+  }).then(() => {
+    const wrap = btnEl.closest('.rev-form');
+    wrap.innerHTML = `<span style="color:#059669;font-size:13px;font-weight:600;">✓ Saved · Score: ${score}/10</span>${comment ? `<div style="font-size:12px;color:#6B7280;margin-top:4px;">${comment}</div>` : ''}`;
+  }).catch(e => {
+    btnEl.textContent = 'Save';
+    btnEl.disabled = false;
+    alert('Error saving: ' + e.message);
+  });
+}
+
+function testCheckReview() {
+  const email = localStorage.getItem('test_teacher_email');
+  if (!email) return;
+  const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test1';
+  db.collection('test_results').doc(docId).get().then(doc => {
+    if (!doc.exists) return;
+    const data = doc.data();
+    if (data.reviewed) {
+      document.getElementById('test-review-notification').style.display = 'block';
+      localStorage.setItem('test_review_data', JSON.stringify(data));
+    }
+  }).catch(() => {});
+}
+
+function testShowReview() {
+  const raw = localStorage.getItem('test_review_data');
+  if (!raw) return;
+  const data = JSON.parse(raw);
+  const reviews = data.reviews || {};
+  const openAnswers = (data.answers || []).filter(a => a.type === 'open');
+  document.getElementById('review-avg-score').textContent = data.averageOpenScore || '—';
+  document.getElementById('teacher-review-list').innerHTML = openAnswers.map((a, i) => {
+    const rev = reviews[`open_${i}`] || {};
+    return `<div style="background:white;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Open question ${i+1}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px;">${a.q}</div>
+      <div style="background:#F9FAFB;border-radius:8px;padding:10px 12px;font-size:13px;color:#374151;line-height:1.6;margin-bottom:12px;">${a.text || '—'}</div>
+      ${rev.score ? `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Score</span>
+          <span style="font-size:18px;font-weight:800;color:${rev.score>=8?'#10B981':rev.score>=5?'#F59E0B':'#EF4444'};">${rev.score}/10</span>
+        </div>
+        ${rev.comment ? `<div style="background:#EFF6FF;border-radius:8px;padding:10px 12px;font-size:13px;color:#1E40AF;line-height:1.6;"><strong>Admin comment:</strong> ${rev.comment}</div>` : ''}
+      ` : '<div style="font-size:13px;color:var(--muted);">Not yet reviewed</div>'}
+    </div>`;
+  }).join('');
+  testShowScreen('test-screen-review');
 }
 
 function testShowAdmin() {
@@ -3544,6 +3668,7 @@ function testInitModule() {
     testCheckDoneCards();
     const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
     document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
+    if (!isAdmin) testCheckReview();
     testShowScreen('test-screen-list');
   } else {
     testShowScreen('test-screen-register');

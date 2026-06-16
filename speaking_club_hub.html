@@ -3309,23 +3309,41 @@ function testLogout() {
 
 function testCheckDoneCards() {
   const email = localStorage.getItem('test_teacher_email');
+  if (!email) return;
   const results = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-  const done = results.find(r => r.email === email && r.testId === 1);
-  const card = document.getElementById('test-card-1');
-  if (done) {
-    const existing = card.querySelector('.test-done-badge');
-    if (!existing) {
-      const meta = card.querySelector('.test-card-meta');
-      const badge = document.createElement('span');
-      badge.className = 'test-done-badge';
-      badge.textContent = `✓ Score: ${done.score}/10`;
-      meta.appendChild(badge);
-    }
-    card.classList.add('done');
-    card.style.cursor = 'default';
-    card.querySelector('.test-card-arrow').textContent = '✓';
-    renderMyAnswers(done);
+  const local = results.find(r => r.email === email && r.testId === 1);
+  if (local) {
+    _markTestDone(local);
+    return;
   }
+  // Not in localStorage — try Firestore
+  const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test1';
+  db.collection('test_results').doc(docId).get().then(doc => {
+    if (!doc.exists) return;
+    const data = doc.data();
+    // Restore to localStorage
+    const all = JSON.parse(localStorage.getItem('test_all_results') || '[]');
+    all.push(data);
+    localStorage.setItem('test_all_results', JSON.stringify(all));
+    _markTestDone(data);
+  }).catch(() => {});
+}
+
+function _markTestDone(done) {
+  const card = document.getElementById('test-card-1');
+  if (!card) return;
+  const existing = card.querySelector('.test-done-badge');
+  if (!existing) {
+    const meta = card.querySelector('.test-card-meta');
+    const badge = document.createElement('span');
+    badge.className = 'test-done-badge';
+    badge.textContent = `✓ Score: ${done.score}/10`;
+    meta.appendChild(badge);
+  }
+  card.classList.add('done');
+  card.style.cursor = 'default';
+  card.querySelector('.test-card-arrow').textContent = '✓';
+  renderMyAnswers(done);
 }
 
 function renderMyAnswers(result) {

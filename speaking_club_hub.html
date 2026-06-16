@@ -514,6 +514,83 @@
   .image-grid a:hover img { transform: scale(1.04); }
   @media (max-width: 768px) { .image-grid { grid-template-columns: repeat(2, 1fr); } }
 
+  /* ── TESTING PLATFORM ── */
+  .test-screen { display: none; }
+  .test-screen.active { display: block; animation: fadeIn .3s ease; }
+
+  .test-register-box {
+    max-width: 460px; margin: 0 auto;
+    background: white; border: 1px solid var(--border);
+    border-radius: 20px; padding: 40px;
+  }
+  .test-register-box h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .test-register-box p { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+  .test-field { margin-bottom: 16px; }
+  .test-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 7px; }
+  .test-field input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: border-color .2s; }
+  .test-field input:focus { border-color: var(--blue); }
+
+  .test-list { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+  .test-card {
+    background: white; border: 1.5px solid var(--border); border-radius: 16px;
+    padding: 24px; display: flex; align-items: center; gap: 18px;
+    cursor: pointer; transition: all .2s;
+  }
+  .test-card:hover { border-color: var(--blue); box-shadow: 0 4px 20px rgba(59,130,246,.12); }
+  .test-card-icon { width: 48px; height: 48px; border-radius: 14px; background: #EFF6FF; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .test-card-info { flex: 1; }
+  .test-card-info h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .test-card-info p { font-size: 13px; color: var(--muted); }
+  .test-card-meta { display: flex; gap: 8px; margin-top: 8px; }
+  .test-meta-tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; background: #EFF6FF; color: #1D4ED8; }
+  .test-card-arrow { font-size: 18px; color: var(--muted); }
+  .test-card.done .test-card-icon { background: #F0FDF4; }
+  .test-done-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: #D1FAE5; color: #065F46; }
+
+  .test-progress-bar { height: 6px; background: #E5E7EB; border-radius: 100px; margin-bottom: 32px; overflow: hidden; }
+  .test-progress-fill { height: 100%; background: var(--blue); border-radius: 100px; transition: width .4s ease; }
+  .test-question-num { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .test-question-text { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.4; margin-bottom: 28px; }
+  .test-options { display: flex; flex-direction: column; gap: 10px; }
+  .test-option {
+    padding: 14px 18px; border: 1.5px solid var(--border); border-radius: 12px;
+    font-size: 14px; font-family: inherit; background: white;
+    cursor: pointer; text-align: left; transition: all .15s; color: var(--text);
+    font-weight: 500;
+  }
+  .test-option:hover { border-color: var(--blue); background: #EFF6FF; }
+  .test-option.selected { border-color: var(--blue); background: #EFF6FF; color: #1D4ED8; font-weight: 600; }
+  .test-option.correct { border-color: #10B981; background: #F0FDF4; color: #065F46; font-weight: 600; }
+  .test-option.wrong { border-color: #EF4444; background: #FEF2F2; color: #991B1B; font-weight: 600; }
+  .test-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; }
+
+  .test-result-header { text-align: center; padding: 32px 0 24px; }
+  .test-score-circle {
+    width: 100px; height: 100px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0 auto 20px; border: 4px solid;
+  }
+  .test-score-circle .score-num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .test-score-circle .score-label { font-size: 11px; font-weight: 600; }
+  .test-result-header h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .test-result-header p { font-size: 14px; color: var(--muted); }
+  .test-reco { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin: 20px 0; }
+  .test-reco h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .test-reco-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; line-height: 1.5; }
+  .test-reco-item:last-child { border-bottom: none; }
+  .test-reco-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; margin-top: 6px; }
+  .test-answers-list { margin-top: 8px; }
+  .test-answer-row {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .test-answer-row:last-child { border-bottom: none; }
+  .test-ans-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .test-ans-body { flex: 1; }
+  .test-ans-q { font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .test-ans-yours { color: var(--muted); font-size: 12px; }
+  .test-ans-correct { color: #059669; font-size: 12px; font-weight: 600; }
+
   /* Spinner */
   .spinner {
     display: inline-block; width: 16px; height: 16px;
@@ -564,6 +641,9 @@
     </a>
     <a class="nav-item" onclick="showModule(9)" href="#">
       <span class="dot" style="background:#6366F1"></span> 9. Group Management
+    </a>
+    <a class="nav-item" onclick="showModule(10)" href="#">
+      <span class="dot" style="background:#10B981"></span> 10. Knowledge Test
     </a>
   </nav>
   <div class="sidebar-footer">
@@ -647,6 +727,12 @@
           <h3>Emergency FAQ</h3>
           <p>10 real scenarios with immediate action plans, teacher scripts, and methodology.</p>
           <span class="arrow" style="color:#EF4444">→</span>
+        </div>
+        <div class="module-card" onclick="showModule(10)">
+          <div class="icon" style="background:#F0FDF4">📝</div>
+          <h3>Knowledge Test</h3>
+          <p>Check your understanding of Speaking Club methodology and get personal recommendations.</p>
+          <span class="arrow" style="color:#10B981">→</span>
         </div>
         <div class="module-card" onclick="showModule(9)">
           <div class="icon" style="background:#EEF2FF">👥</div>
@@ -2169,6 +2255,104 @@
 
     </section>
 
+    <!-- ══ MODULE 10 · KNOWLEDGE TEST ══ -->
+    <section class="section" id="module-10">
+      <button class="back-btn" onclick="showHome()">← Back to overview</button>
+      <div class="section-header">
+        <div class="icon-big" style="background:#F0FDF4">📝</div>
+        <div>
+          <h2>Knowledge Test</h2>
+          <p>Check how well you know the Speaking Club methodology</p>
+        </div>
+      </div>
+
+      <!-- SCREEN 1: Register -->
+      <div class="test-screen active" id="test-screen-register">
+        <div class="test-register-box">
+          <h2>Before you start</h2>
+          <p>Enter your name and email — your results will be saved so the admin can review them.</p>
+          <div class="test-field">
+            <label>Your name</label>
+            <input type="text" id="test-name" placeholder="Anna Kovalenko">
+          </div>
+          <div class="test-field">
+            <label>Email</label>
+            <input type="email" id="test-email" placeholder="anna@example.com">
+          </div>
+          <div id="test-reg-error" style="color:#EF4444;font-size:13px;margin-bottom:14px;display:none;"></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:4px;" onclick="testRegister()">Continue →</button>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: Test list -->
+      <div class="test-screen" id="test-screen-list">
+        <div style="margin-bottom:20px;">
+          <span style="font-size:13px;color:var(--muted);">Signed in as: </span>
+          <span style="font-size:13px;font-weight:700;" id="test-list-name"></span>
+          <button onclick="testLogout()" style="margin-left:12px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">Change</button>
+        </div>
+        <div class="test-list">
+          <div class="test-card" id="test-card-1" onclick="testStart(1)">
+            <div class="test-card-icon">📚</div>
+            <div class="test-card-info">
+              <h3>Speaking Club Basics</h3>
+              <p>Structure, timing, triggers, error correction, teacher's role</p>
+              <div class="test-card-meta">
+                <span class="test-meta-tag">10 questions</span>
+                <span class="test-meta-tag">~5 min</span>
+                <span class="test-meta-tag">Multiple choice</span>
+              </div>
+            </div>
+            <span class="test-card-arrow">→</span>
+          </div>
+        </div>
+        <div id="test-admin-section" style="display:none;margin-top:32px;">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Admin view — all results</div>
+          <div id="test-admin-list"></div>
+        </div>
+        <div style="margin-top:24px;text-align:center;">
+          <button onclick="testShowAdmin()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">View all saved results</button>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: Taking test -->
+      <div class="test-screen" id="test-screen-taking">
+        <div class="test-progress-bar"><div class="test-progress-fill" id="test-progress" style="width:0%"></div></div>
+        <div class="test-question-num" id="test-q-num">Question 1 of 10</div>
+        <div class="test-question-text" id="test-q-text"></div>
+        <div class="test-options" id="test-q-options"></div>
+        <div class="test-nav">
+          <span></span>
+          <button class="btn btn-primary" id="test-next-btn" onclick="testNext()" style="display:none;">Next →</button>
+        </div>
+      </div>
+
+      <!-- SCREEN 4: Results -->
+      <div class="test-screen" id="test-screen-results">
+        <div class="test-result-header">
+          <div class="test-score-circle" id="test-score-circle">
+            <span class="score-num" id="test-score-num"></span>
+            <span class="score-label">out of 10</span>
+          </div>
+          <h2 id="test-result-title"></h2>
+          <p id="test-result-subtitle"></p>
+        </div>
+        <div class="test-reco card" id="test-reco-block">
+          <h3>Recommendations</h3>
+          <div id="test-reco-list"></div>
+        </div>
+        <div class="card" style="margin-top:0;">
+          <h3 style="margin-bottom:16px;">Your answers</h3>
+          <div class="test-answers-list" id="test-answers-list"></div>
+        </div>
+        <div style="text-align:center;margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="testRetake()">Retake test</button>
+          <button class="btn" style="background:var(--bg);border:1.5px solid var(--border);" onclick="testBackToList()">← Back to tests</button>
+        </div>
+      </div>
+
+    </section>
+
   </div>
 </div>
 
@@ -2187,10 +2371,11 @@ function showModule(num) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('module-' + num).classList.add('active');
   document.querySelectorAll('.nav-item').forEach((n,i) => n.classList.toggle('active', i === num));
-  const titles = ['','What Is a Speaking Club?','The Problem','Structure & Timing','Live Triggers','Stage-by-Stage Guide','Tools & Resources','Lesson Planner','Emergency FAQ','Group Management'];
+  const titles = ['','What Is a Speaking Club?','The Problem','Structure & Timing','Live Triggers','Stage-by-Stage Guide','Tools & Resources','Lesson Planner','Emergency FAQ','Group Management','Knowledge Test'];
   document.getElementById('topbar-title').textContent = titles[num];
   closeSidebar();
   window.scrollTo(0,0);
+  if (num === 10) testInitModule();
 }
 
 // ── FAQ & Student Type Accordions ────────────────────────────
@@ -2824,6 +3009,363 @@ const fallback = [
     document.getElementById('trig-why').innerHTML = '🎯 <strong>Why it works:</strong> ' + item.why;
     document.getElementById('trigger-result').classList.add('show');
   }, 600);
+}
+
+// ── Testing Platform ──────────────────────────────────────────
+const TEST_QUESTIONS = [
+  {
+    q: 'What is the maximum group size for a Study Less Speaking Club?',
+    options: ['5 students', '8 students', '12 students', '15 students'],
+    correct: 1,
+    module: 'Structure & Timing'
+  },
+  {
+    q: 'How long is the Ice Breaker (warm-up) stage at the start of the lesson?',
+    options: ['3–5 minutes', '7–10 minutes', '15 minutes', '20 minutes'],
+    correct: 1,
+    module: 'Structure & Timing'
+  },
+  {
+    q: 'When should the teacher correct student mistakes?',
+    options: [
+      'Immediately, as soon as the mistake is made',
+      'After each student finishes their thought',
+      'Only during the Feedback stage at the very end',
+      'Never — mistakes are completely ignored'
+    ],
+    correct: 2,
+    module: 'Stage-by-Stage Guide'
+  },
+  {
+    q: 'What is the main purpose of a "trigger" in a Speaking Club lesson?',
+    options: [
+      'To signal when time is up for a stage',
+      'To create intrigue and launch discussion without revealing the topic directly',
+      'To test students\' grammar knowledge before the lesson',
+      'To introduce a list of new vocabulary words'
+    ],
+    correct: 1,
+    module: 'Live Triggers'
+  },
+  {
+    q: 'Do students need to prepare the lesson topic in advance?',
+    options: [
+      'Yes, always — preparation is required',
+      'Yes, but only for B2+ levels',
+      'No — students arrive with zero preparation',
+      'Only for A1–A2 beginners'
+    ],
+    correct: 2,
+    module: 'What Is a Speaking Club?'
+  },
+  {
+    q: 'What is the teacher\'s main role during the Main Discussion stage?',
+    options: [
+      'Explain grammar structures and give examples',
+      'Correct every mistake and show the right form',
+      'Keep the conversation flowing and ensure equal participation',
+      'Translate difficult words into Ukrainian'
+    ],
+    correct: 2,
+    module: 'Stage-by-Stage Guide'
+  },
+  {
+    q: 'Which behaviour describes the "Silent One" student type?',
+    options: [
+      'Talks non-stop and interrupts others',
+      'Doesn\'t speak unless directly asked; gives very short answers',
+      'Switches to Ukrainian (L1) instead of English',
+      'Arrives late and leaves early every lesson'
+    ],
+    correct: 1,
+    module: 'Group Management'
+  },
+  {
+    q: 'A student goes completely silent during the Main Discussion. What is the best response?',
+    options: [
+      'Ignore them and continue with other students',
+      'Translate the question into Ukrainian',
+      'Use a gentle, direct re-engagement question addressed to them',
+      'End the discussion stage early'
+    ],
+    correct: 2,
+    module: 'Emergency FAQ'
+  },
+  {
+    q: 'What is the total length of a standard Speaking Club lesson?',
+    options: ['45 minutes', '60 minutes', '90 minutes', '120 minutes'],
+    correct: 1,
+    module: 'Structure & Timing'
+  },
+  {
+    q: 'Which of these is NOT a valid trigger type in the Study Less methodology?',
+    options: [
+      'Surprising Fact',
+      'Quote / Statement',
+      'Grammar Exercise',
+      'Scenario / Dilemma'
+    ],
+    correct: 2,
+    module: 'Live Triggers'
+  }
+];
+
+const TEST_RECOMMENDATIONS = {
+  excellent: {
+    title: 'Excellent result!',
+    subtitle: 'You know the methodology very well. Keep it up.',
+    color: '#10B981',
+    bg: '#F0FDF4',
+    border: '#10B981',
+    reco: [
+      'Focus on building your personal trigger bank — collect phrases that work for your groups.',
+      'Practice using the timer during Main Discussion to ensure equal speaking time.',
+      'Consider mentoring newer teachers using the Emergency FAQ scenarios.'
+    ]
+  },
+  good: {
+    title: 'Good understanding!',
+    subtitle: 'You know the core — a few areas to polish.',
+    color: '#3B82F6',
+    bg: '#EFF6FF',
+    border: '#3B82F6',
+    reco: [
+      'Review the Stage-by-Stage Guide (Module 5) to strengthen your timing instincts.',
+      'Practice the Feedback stage format — it\'s easy to skip or rush.',
+      'Re-read the Live Triggers module and try using a different trigger type each lesson.'
+    ]
+  },
+  ok: {
+    title: 'On the right track',
+    subtitle: 'Some important concepts need more attention.',
+    color: '#F59E0B',
+    bg: '#FFFBEB',
+    border: '#F59E0B',
+    reco: [
+      'Re-read Structure & Timing (Module 3) — timing is the foundation of every lesson.',
+      'Study the Stage-by-Stage Guide carefully, especially error correction rules.',
+      'Work through all 10 Emergency FAQ scenarios before your next lesson.',
+      'Ask a colleague or admin to observe one of your lessons and give feedback.'
+    ]
+  },
+  needsWork: {
+    title: 'Let\'s start from basics',
+    subtitle: 'We recommend going through all modules before teaching.',
+    color: '#EF4444',
+    bg: '#FEF2F2',
+    border: '#EF4444',
+    reco: [
+      'Read modules 1–5 in order before your next lesson.',
+      'Pay special attention to: error correction timing, the teacher\'s role, and trigger types.',
+      'Shadow an experienced teacher for 2–3 lessons to see the methodology in action.',
+      'Retake this test after studying — aim for 8+ before teaching independently.'
+    ]
+  }
+};
+
+let testState = {
+  currentQ: 0,
+  answers: [],
+  selectedAnswer: null,
+  answered: false
+};
+
+function testShowScreen(id) {
+  document.querySelectorAll('.test-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function testRegister() {
+  const name = document.getElementById('test-name').value.trim();
+  const email = document.getElementById('test-email').value.trim();
+  const errEl = document.getElementById('test-reg-error');
+  if (!name) { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
+  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  localStorage.setItem('test_teacher_name', name);
+  localStorage.setItem('test_teacher_email', email);
+  document.getElementById('test-list-name').textContent = name;
+  testCheckDoneCards();
+  testShowScreen('test-screen-list');
+}
+
+function testLogout() {
+  localStorage.removeItem('test_teacher_name');
+  localStorage.removeItem('test_teacher_email');
+  document.getElementById('test-name').value = '';
+  document.getElementById('test-email').value = '';
+  testShowScreen('test-screen-register');
+}
+
+function testCheckDoneCards() {
+  const email = localStorage.getItem('test_teacher_email');
+  const results = JSON.parse(localStorage.getItem('test_all_results') || '[]');
+  const done = results.find(r => r.email === email && r.testId === 1);
+  const card = document.getElementById('test-card-1');
+  if (done) {
+    const existing = card.querySelector('.test-done-badge');
+    if (!existing) {
+      const meta = card.querySelector('.test-card-meta');
+      const badge = document.createElement('span');
+      badge.className = 'test-done-badge';
+      badge.textContent = `✓ Score: ${done.score}/10`;
+      meta.appendChild(badge);
+    }
+    card.classList.add('done');
+  }
+}
+
+function testStart(id) {
+  testState = { currentQ: 0, answers: [], selectedAnswer: null, answered: false };
+  testShowScreen('test-screen-taking');
+  testRenderQuestion();
+}
+
+function testRenderQuestion() {
+  const q = TEST_QUESTIONS[testState.currentQ];
+  const total = TEST_QUESTIONS.length;
+  const num = testState.currentQ + 1;
+
+  document.getElementById('test-progress').style.width = ((num - 1) / total * 100) + '%';
+  document.getElementById('test-q-num').textContent = `Question ${num} of ${total}`;
+  document.getElementById('test-q-text').textContent = q.q;
+  document.getElementById('test-next-btn').style.display = 'none';
+
+  const optionsEl = document.getElementById('test-q-options');
+  optionsEl.innerHTML = q.options.map((opt, i) =>
+    `<button class="test-option" id="test-opt-${i}" onclick="testSelectAnswer(${i})">${opt}</button>`
+  ).join('');
+
+  testState.selectedAnswer = null;
+  testState.answered = false;
+}
+
+function testSelectAnswer(idx) {
+  if (testState.answered) return;
+  testState.answered = true;
+  testState.selectedAnswer = idx;
+
+  const q = TEST_QUESTIONS[testState.currentQ];
+  testState.answers.push({ q: q.q, selected: idx, correct: q.correct, options: q.options, module: q.module });
+
+  document.querySelectorAll('.test-option').forEach((btn, i) => {
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === idx) btn.classList.add('wrong');
+    btn.disabled = true;
+  });
+
+  document.getElementById('test-next-btn').style.display = 'block';
+  const isLast = testState.currentQ === TEST_QUESTIONS.length - 1;
+  document.getElementById('test-next-btn').textContent = isLast ? 'See results →' : 'Next →';
+}
+
+function testNext() {
+  if (testState.currentQ < TEST_QUESTIONS.length - 1) {
+    testState.currentQ++;
+    testRenderQuestion();
+  } else {
+    testShowResults();
+  }
+}
+
+function testShowResults() {
+  const score = testState.answers.filter(a => a.selected === a.correct).length;
+  const name = localStorage.getItem('test_teacher_name') || 'Teacher';
+  const email = localStorage.getItem('test_teacher_email') || '';
+
+  // Save result
+  const allResults = JSON.parse(localStorage.getItem('test_all_results') || '[]');
+  const resultEntry = {
+    testId: 1,
+    name, email, score,
+    date: new Date().toLocaleDateString('uk-UA'),
+    answers: testState.answers
+  };
+  // Replace if already exists for same email+test, otherwise add
+  const idx = allResults.findIndex(r => r.email === email && r.testId === 1);
+  if (idx >= 0) allResults[idx] = resultEntry; else allResults.push(resultEntry);
+  localStorage.setItem('test_all_results', JSON.stringify(allResults));
+
+  // Pick level
+  let level;
+  if (score >= 9) level = 'excellent';
+  else if (score >= 7) level = 'good';
+  else if (score >= 5) level = 'ok';
+  else level = 'needsWork';
+  const reco = TEST_RECOMMENDATIONS[level];
+
+  // Score circle
+  const circle = document.getElementById('test-score-circle');
+  circle.style.borderColor = reco.color;
+  circle.style.background = reco.bg;
+  circle.querySelector('.score-num').textContent = score;
+  circle.querySelector('.score-num').style.color = reco.color;
+
+  document.getElementById('test-result-title').textContent = reco.title;
+  document.getElementById('test-result-subtitle').textContent = reco.subtitle;
+
+  document.getElementById('test-reco-list').innerHTML = reco.reco.map(r =>
+    `<div class="test-reco-item"><span class="test-reco-dot" style="background:${reco.color}"></span><span>${r}</span></div>`
+  ).join('');
+
+  document.getElementById('test-answers-list').innerHTML = testState.answers.map((a, i) => {
+    const isRight = a.selected === a.correct;
+    return `<div class="test-answer-row">
+      <span class="test-ans-icon">${isRight ? '✅' : '❌'}</span>
+      <div class="test-ans-body">
+        <div class="test-ans-q">${i + 1}. ${a.q}</div>
+        ${!isRight ? `<div class="test-ans-yours">Your answer: ${a.options[a.selected]}</div>
+        <div class="test-ans-correct">Correct: ${a.options[a.correct]}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('test-progress').style.width = '100%';
+  testShowScreen('test-screen-results');
+}
+
+function testRetake() {
+  testStart(1);
+}
+
+function testBackToList() {
+  testCheckDoneCards();
+  testShowScreen('test-screen-list');
+}
+
+function testShowAdmin() {
+  const section = document.getElementById('test-admin-section');
+  section.style.display = 'block';
+  const results = JSON.parse(localStorage.getItem('test_all_results') || '[]');
+  if (!results.length) {
+    document.getElementById('test-admin-list').innerHTML = '<p style="font-size:13px;color:var(--muted);">No results yet.</p>';
+    return;
+  }
+  document.getElementById('test-admin-list').innerHTML = results.map(r => `
+    <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;">
+      <div style="width:44px;height:44px;border-radius:50%;background:#EFF6FF;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#1D4ED8;flex-shrink:0;">${r.score}</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;">${r.name}</div>
+        <div style="font-size:12px;color:var(--muted);">${r.email} · ${r.date}</div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:${r.score>=9?'#10B981':r.score>=7?'#3B82F6':r.score>=5?'#F59E0B':'#EF4444'};">${r.score}/10</div>
+    </div>
+  `).join('');
+}
+
+
+function testInitModule() {
+  const name = localStorage.getItem('test_teacher_name');
+  const email = localStorage.getItem('test_teacher_email');
+  if (name && email) {
+    document.getElementById('test-name').value = name;
+    document.getElementById('test-email').value = email;
+    document.getElementById('test-list-name').textContent = name;
+    testCheckDoneCards();
+    testShowScreen('test-screen-list');
+  } else {
+    testShowScreen('test-screen-register');
+  }
 }
 
 // Init on load

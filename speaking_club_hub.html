@@ -2310,8 +2310,8 @@
           <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Admin view — all results</div>
           <div id="test-admin-list"></div>
         </div>
-        <div style="margin-top:24px;text-align:center;">
-          <button onclick="testShowAdmin()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">View all saved results</button>
+        <div id="test-admin-btn-wrap" style="display:none;margin-top:24px;text-align:center;">
+          <button onclick="testShowAdmin()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">View all results (admin)</button>
         </div>
       </div>
 
@@ -3200,6 +3200,8 @@ function testRegister() {
   localStorage.setItem('test_teacher_email', email);
   document.getElementById('test-list-name').textContent = name;
   testCheckDoneCards();
+  const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
+  document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
   testShowScreen('test-screen-list');
 }
 
@@ -3396,6 +3398,8 @@ function testInitModule() {
     document.getElementById('test-email').value = email;
     document.getElementById('test-list-name').textContent = name;
     testCheckDoneCards();
+    const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
+    document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
     testShowScreen('test-screen-list');
   } else {
     testShowScreen('test-screen-register');

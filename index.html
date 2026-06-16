@@ -3315,8 +3315,14 @@ function testRenderQuestion() {
         e.preventDefault();
         testState.pasteDetected = true;
         ta.classList.add('paste-detected');
-        document.getElementById('test-paste-warn').classList.add('show');
-        // Brief shake animation
+        ta.disabled = true;
+        const warn = document.getElementById('test-paste-warn');
+        warn.innerHTML = '⛔ Pasting is not allowed. Reload the page and type your answer manually.';
+        warn.classList.add('show');
+        const btn = document.getElementById('test-next-btn');
+        btn.disabled = true;
+        btn.style.opacity = '0.4';
+        btn.style.cursor = 'not-allowed';
         ta.style.animation = 'none';
         ta.offsetHeight;
         ta.style.animation = 'shake .3s ease';

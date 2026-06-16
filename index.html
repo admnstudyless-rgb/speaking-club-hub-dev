@@ -451,7 +451,7 @@
     transition: background .15s;
   }
   .faq-header:hover { background: var(--bg); }
-  .faq-icon { display: none; }
+  .faq-icon { font-size: 20px; flex-shrink: 0; }
   .faq-title { font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
   .faq-label { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
   .faq-arrow { font-size: 13px; color: var(--muted); flex-shrink: 0; transition: transform .2s; margin-left: 4px; }
@@ -475,7 +475,7 @@
   .student-type { border: 1.5px solid var(--border); border-radius: 16px; margin-bottom: 14px; overflow: hidden; background: white; }
   .student-type-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; transition: background .15s; }
   .student-type-header:hover { background: var(--bg); }
-  .st-icon { display: none; }
+  .st-icon { font-size: 24px; flex-shrink: 0; }
   .st-info { flex: 1; }
   .st-name { font-size: 14px; font-weight: 800; color: var(--text); }
   .st-tagline { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -642,13 +642,13 @@
           <span class="arrow" style="color:#14B8A6">→</span>
         </div>
         <div class="module-card" onclick="showModule(8)">
-          <div class="icon" style="background:#FEF2F2; font-size:13px; font-weight:800; color:#DC2626; letter-spacing:-.3px;">FAQ</div>
+          <div class="icon" style="background:#FEF2F2">🚨</div>
           <h3>Emergency FAQ</h3>
           <p>10 real scenarios with immediate action plans, teacher scripts, and methodology.</p>
           <span class="arrow" style="color:#EF4444">→</span>
         </div>
         <div class="module-card" onclick="showModule(9)">
-          <div class="icon" style="background:#EEF2FF; font-size:13px; font-weight:800; color:#4338CA; letter-spacing:-.3px;">GRP</div>
+          <div class="icon" style="background:#EEF2FF">👥</div>
           <h3>Group Management</h3>
           <p>7 student types you'll meet in every SC — recognition, techniques, and exact phrases.</p>
           <span class="arrow" style="color:#6366F1">→</span>
@@ -1420,7 +1420,7 @@
     <section class="section" id="module-8">
       <button class="back-btn" onclick="showHome()">← Back to overview</button>
       <div class="section-header">
-        <div class="icon-big" style="background:#FEF2F2; font-size:13px; font-weight:800; color:#DC2626;">FAQ</div>
+        <div class="icon-big" style="background:#FEF2F2">🚨</div>
         <div>
           <h2 style="color:#DC2626">Emergency FAQ</h2>
           <p>What to do when the lesson goes off-script — real solutions for real situations</p>
@@ -1799,7 +1799,7 @@
     <section class="section" id="module-9">
       <button class="back-btn" onclick="showHome()">← Back to overview</button>
       <div class="section-header">
-        <div class="icon-big" style="background:#EEF2FF; font-size:13px; font-weight:800; color:#4338CA;">GRP</div>
+        <div class="icon-big" style="background:#EEF2FF">👥</div>
         <div>
           <h2 style="color:#4338CA">Group Management</h2>
           <p>7 student types you'll meet in every Speaking Club — and exactly how to handle each one</p>

@@ -2312,11 +2312,6 @@
           <span style="font-size:13px;font-weight:700;" id="test-list-name"></span>
           <button onclick="testLogout()" style="margin-left:12px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">Change</button>
         </div>
-        <div id="test-review-notification" style="display:none;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:14px;padding:16px 20px;margin-bottom:16px;cursor:pointer;" onclick="testShowReview()">
-          <div style="font-size:14px;font-weight:700;color:#065F46;">✅ Your open answers have been reviewed!</div>
-          <div style="font-size:12px;color:#047857;margin-top:3px;">Click to see feedback and your average score →</div>
-        </div>
-
         <div class="test-list">
           <div class="test-card" id="test-card-1" onclick="testStart(1)">
             <div class="test-card-icon">📚</div>
@@ -3362,7 +3357,11 @@ function renderMyAnswers(result) {
   document.getElementById('my-answers-section').style.display = 'block';
   const mcAnswers = (result.answers || []).filter(a => a.type !== 'open');
   const openAnswers = (result.answers || []).filter(a => a.type === 'open');
-  const reviews = result.reviews || {};
+  // Prefer review data from Firestore cache if available
+  const reviewCache = JSON.parse(localStorage.getItem('test_review_data') || 'null');
+  const reviews = (reviewCache && reviewCache.email === result.email)
+    ? (reviewCache.reviews || {})
+    : (result.reviews || {});
 
   const mcHtml = mcAnswers.map((a, i) => {
     const isRight = a.selected === a.correct;
@@ -3709,8 +3708,15 @@ function testCheckReview() {
     if (!doc.exists) return;
     const data = doc.data();
     if (data.reviewed) {
-      document.getElementById('test-review-notification').style.display = 'block';
       localStorage.setItem('test_review_data', JSON.stringify(data));
+      // Update "See my answers" button
+      const section = document.getElementById('my-answers-section');
+      if (section) {
+        const btn = section.querySelector('button');
+        if (btn) btn.innerHTML = `<span>See my answers &nbsp;<span style="background:#D1FAE5;color:#065F46;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">✅ Open answers reviewed</span></span><span id="my-answers-arrow">▾</span>`;
+      }
+      // Re-render with review data
+      renderMyAnswers(data);
     }
   }).catch(() => {});
 }

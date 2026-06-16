@@ -2332,12 +2332,35 @@
             <span class="test-card-arrow">→</span>
           </div>
         </div>
+
+        <div id="my-answers-section" style="display:none;margin-top:8px;">
+          <button onclick="toggleMyAnswers()" style="width:100%;background:none;border:1.5px solid var(--border);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;text-align:left;display:flex;justify-content:space-between;align-items:center;">
+            <span>See my answers</span><span id="my-answers-arrow">▾</span>
+          </button>
+          <div id="my-answers-body" style="display:none;background:white;border:1px solid var(--border);border-radius:0 0 10px 10px;border-top:none;padding:16px;"></div>
+        </div>
+
         <div id="test-admin-section" style="display:none;margin-top:32px;">
           <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Admin view — all results</div>
           <div id="test-admin-list"></div>
         </div>
         <div id="test-admin-btn-wrap" style="display:none;margin-top:24px;text-align:center;">
           <button onclick="testShowAdmin()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">View all results (admin)</button>
+        </div>
+      </div>
+
+      <!-- SCREEN 1.5: One-attempt warning -->
+      <div class="test-screen" id="test-screen-confirm">
+        <div style="max-width:480px;margin:0 auto;text-align:center;padding:20px 0;">
+          <div style="width:64px;height:64px;background:#FFFBEB;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;">⚠️</div>
+          <h2 style="font-size:22px;font-weight:800;margin-bottom:12px;">Before you start</h2>
+          <div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:14px;padding:20px 24px;text-align:left;margin-bottom:28px;">
+            <p style="font-size:14px;color:#78350F;line-height:1.7;margin:0;"><strong>This test can only be taken once.</strong> After submitting your answers, you will not be able to retake it. Make sure you are ready and have enough time (~10 min).</p>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center;">
+            <button class="btn" style="background:var(--bg);border:1.5px solid var(--border);" onclick="testBackToList()">Cancel</button>
+            <button class="btn btn-primary" onclick="testConfirmStart()">I'm ready — Start →</button>
+          </div>
         </div>
       </div>
 
@@ -3299,11 +3322,65 @@ function testCheckDoneCards() {
       meta.appendChild(badge);
     }
     card.classList.add('done');
+    card.style.cursor = 'default';
+    card.querySelector('.test-card-arrow').textContent = '✓';
+    renderMyAnswers(done);
   }
 }
 
+function renderMyAnswers(result) {
+  document.getElementById('my-answers-section').style.display = 'block';
+  const mcAnswers = (result.answers || []).filter(a => a.type !== 'open');
+  const openAnswers = (result.answers || []).filter(a => a.type === 'open');
+  const reviews = result.reviews || {};
+
+  const mcHtml = mcAnswers.map((a, i) => {
+    const isRight = a.selected === a.correct;
+    return `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;font-size:13px;line-height:1.5;">
+      <span>${isRight ? '✅' : '❌'}</span>
+      <div>
+        <div style="font-weight:600;margin-bottom:2px;">${i+1}. ${a.q}</div>
+        <div style="color:${isRight?'#059669':'#EF4444'};">${a.options[a.selected]}</div>
+        ${!isRight ? `<div style="color:#059669;font-size:12px;">Correct: ${a.options[a.correct]}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const openHtml = openAnswers.length ? `
+    <div style="margin-top:14px;padding-top:14px;border-top:1.5px solid var(--border);">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px;">Open questions</div>
+      ${openAnswers.map((a, i) => {
+        const rev = reviews[`open_${i}`];
+        return `<div style="margin-bottom:12px;padding:12px;background:#F9FAFB;border-radius:10px;">
+          <div style="font-size:12px;font-weight:700;margin-bottom:6px;">Q${i+1}: ${a.q}</div>
+          <div style="font-size:13px;color:#374151;line-height:1.6;margin-bottom:${rev?'8px':'0'};">${a.text||'—'}</div>
+          ${rev ? `<div style="font-size:12px;font-weight:700;color:${rev.score>=8?'#10B981':rev.score>=5?'#F59E0B':'#EF4444'};">Score: ${rev.score}/10</div>
+          ${rev.comment?`<div style="font-size:12px;color:#6B7280;margin-top:3px;">${rev.comment}</div>`:''}` : ''}
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  document.getElementById('my-answers-body').innerHTML = mcHtml + openHtml;
+}
+
+function toggleMyAnswers() {
+  const body = document.getElementById('my-answers-body');
+  const arrow = document.getElementById('my-answers-arrow');
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  arrow.textContent = open ? '▾' : '▴';
+}
+
 function testStart(id) {
-  testState = { currentQ: 0, answers: [], selectedAnswer: null, answered: false };
+  const email = localStorage.getItem('test_teacher_email');
+  const localResults = JSON.parse(localStorage.getItem('test_all_results') || '[]');
+  const done = localResults.find(r => r.email === email && r.testId === id);
+  if (done) return; // already taken — block retake
+  testShowScreen('test-screen-confirm');
+}
+
+function testConfirmStart() {
+  testState = { currentQ: 0, answers: [], selectedAnswer: null, answered: false, pasteDetected: false };
   testShowScreen('test-screen-taking');
   testRenderQuestion();
 }

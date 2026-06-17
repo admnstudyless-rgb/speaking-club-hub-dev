@@ -5228,56 +5228,8 @@ function printLessonPlan() {
           <span style="color:#6B7280;font-size:12px;">No requests today yet.</span>
         </div>
 
-        <div style="border-top:1px solid #F3F4F6;padding-top:14px;margin-bottom:12px;">
-          <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:4px;">🤖 Hugging Face — AI image generation</div>
-          <div style="font-size:11px;color:#6B7280;margin-bottom:10px;">Free token at <a href="https://huggingface.co/settings/tokens" target="_blank" style="color:#6366F1;">huggingface.co/settings/tokens</a> — FLUX model, much better quality than Pollinations.</div>
-          <div id="hf-setup">
-            <div style="display:flex;gap:8px;">
-              <input type="password" id="hf-token-input" placeholder="hf_..."
-                style="flex:1;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-              <button onclick="saveHfToken()" style="background:#6366F1;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:9px 14px;cursor:pointer;font-family:inherit;white-space:nowrap;" id="hf-save-btn">Save</button>
-            </div>
-          </div>
-          <div id="hf-status" style="display:none;align-items:center;justify-content:space-between;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:8px;padding:9px 12px;">
-            <span style="font-size:13px;color:#059669;font-weight:700;">✓ Hugging Face connected</span>
-            <button onclick="removeHfToken()" style="background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;padding:4px 10px;font-family:inherit;">Change</button>
-          </div>
-        </div>
-
-        <div style="border-top:1px solid #F3F4F6;padding-top:14px;margin-bottom:12px;">
-          <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:4px;">🖼️ Pixabay — free photos for lessons</div>
-          <div style="font-size:11px;color:#6B7280;margin-bottom:10px;">Free key at <a href="https://pixabay.com/api/docs/" target="_blank" style="color:#6366F1;">pixabay.com/api/docs</a> — register, then copy key from the top of that page.</div>
-          <div id="pixabay-setup">
-            <div style="display:flex;gap:8px;">
-              <input type="password" id="pixabay-key-input" placeholder="Paste Pixabay API key…"
-                style="flex:1;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-              <button onclick="savePixabayKey()" style="background:#6366F1;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:9px 14px;cursor:pointer;font-family:inherit;white-space:nowrap;" id="pixabay-save-btn">Save</button>
-            </div>
-          </div>
-          <div id="pixabay-status" style="display:none;align-items:center;justify-content:space-between;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:8px;padding:9px 12px;">
-            <span style="font-size:13px;color:#059669;font-weight:700;">✓ Pixabay connected</span>
-            <button onclick="removePixabayKey()" style="background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;padding:4px 10px;font-family:inherit;">Change</button>
-          </div>
-        </div>
-
-        <div style="border-top:1px solid #F3F4F6;padding-top:14px;margin-bottom:12px;">
-          <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:4px;">📷 Pexels — real photos for lessons</div>
-          <div style="font-size:11px;color:#6B7280;margin-bottom:10px;">Get a free key at <a href="https://www.pexels.com/api/" target="_blank" style="color:#6366F1;">pexels.com/api</a> — used in AI Lesson Planner images.</div>
-          <div id="pexels-setup">
-            <div style="display:flex;gap:8px;">
-              <input type="password" id="pexels-key-input" placeholder="Paste Pexels API key…"
-                style="flex:1;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-              <button onclick="savePexelsKey()" style="background:#6366F1;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:9px 14px;cursor:pointer;font-family:inherit;white-space:nowrap;" id="pexels-save-btn">Save</button>
-            </div>
-          </div>
-          <div id="pexels-status" style="display:none;align-items:center;justify-content:space-between;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:8px;padding:9px 12px;">
-            <span style="font-size:13px;color:#059669;font-weight:700;">✓ Pexels connected</span>
-            <button onclick="removePexelsKey()" style="background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;padding:4px 10px;font-family:inherit;">Change</button>
-          </div>
-        </div>
-
         <details style="font-size:12px;color:#6B7280;">
-          <summary style="cursor:pointer;font-weight:600;color:#374151;margin-bottom:10px;outline:none;">How to get a free API key</summary>
+          <summary style="cursor:pointer;font-weight:600;color:#374151;margin-bottom:10px;outline:none;">How to get a free Gemini API key</summary>
           <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
             <div style="display:flex;gap:10px;align-items:flex-start;">
               <div style="min-width:22px;height:22px;border-radius:50%;background:#6366F1;color:white;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>

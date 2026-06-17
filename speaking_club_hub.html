@@ -4784,16 +4784,32 @@ async function _loadLessonImage(pexelsQuery, lexicaPrompt) {
       } catch(e) {}
     }
 
-    // 3. Lexica.art — free fallback
+    // 3. Lexica.art — AI image search (simple keywords work better)
     if (!url) {
       try {
-        const q = encodeURIComponent(lexicaPrompt || pexelsQuery);
+        const q = encodeURIComponent(pexelsQuery);
         const resp = await fetch(`https://lexica.art/api/v1/search?q=${q}`);
         const data = await resp.json();
         if (data.images && data.images.length > 0) {
           const pick = data.images[Math.floor(Math.random() * Math.min(data.images.length, 8))];
           url = pick.src;
           sourceName = '🤖 AI-generated image · Lexica.art';
+        }
+      } catch(e) {}
+    }
+
+    // 4. Openverse (Creative Commons) — truly free, no key needed
+    if (!url) {
+      try {
+        const q = encodeURIComponent(pexelsQuery);
+        const resp = await fetch(`https://api.openverse.org/v1/images/?q=${q}&page_size=20&license_type=commercial`, {
+          headers: { 'User-Agent': 'StudyLess-SCHub/1.0' }
+        });
+        const data = await resp.json();
+        if (data.results && data.results.length > 0) {
+          const pick = data.results[Math.floor(Math.random() * Math.min(data.results.length, 10))];
+          url = pick.url;
+          sourceName = `🖼️ ${pick.title ? pick.title + ' · ' : ''}Openverse CC`;
         }
       } catch(e) {}
     }

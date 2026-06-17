@@ -664,7 +664,7 @@
       <span class="dot" style="background:#6366F1"></span> 9. Group Management
     </a>
     <a class="nav-item" onclick="showModule(10)" href="#">
-      <span class="dot" style="background:#10B981"></span> 10. Knowledge Test
+      <span class="dot" style="background:#10B981"></span> 10. Training & Tests
     </a>
   </nav>
   <div class="sidebar-footer">
@@ -751,7 +751,7 @@
         </div>
         <div class="module-card" onclick="showModule(10)">
           <div class="icon" style="background:#F0FDF4">📝</div>
-          <h3>Knowledge Test</h3>
+          <h3>Training & Tests</h3>
           <p>Check your understanding of Speaking Club methodology and get personal recommendations.</p>
           <span class="arrow" style="color:#10B981">→</span>
         </div>
@@ -2282,7 +2282,7 @@
       <div class="section-header">
         <div class="icon-big" style="background:#F0FDF4">📝</div>
         <div>
-          <h2>Knowledge Test</h2>
+          <h2>Training & Tests</h2>
           <p>Check how well you know the Speaking Club methodology</p>
         </div>
       </div>
@@ -2291,26 +2291,51 @@
       <div class="test-screen active" id="test-screen-register">
         <div class="test-register-box">
           <h2>Before you start</h2>
-          <p>Enter your name and email — your results will be saved so the admin can review them.</p>
+          <p>Enter your name and work email — your results will be saved and the admin can review them.</p>
           <div class="test-field">
             <label>Your name</label>
             <input type="text" id="test-name" placeholder="Anna Kovalenko">
           </div>
           <div class="test-field">
-            <label>Email</label>
-            <input type="email" id="test-email" placeholder="anna@example.com">
+            <label>Work email</label>
+            <input type="email" id="test-email" placeholder="anna@studyless.com">
+            <div style="font-size:11px;color:var(--muted);margin-top:5px;">Use your work email — it must be real and accessible to you.</div>
           </div>
           <div id="test-reg-error" style="color:#EF4444;font-size:13px;margin-bottom:14px;display:none;"></div>
-          <button class="btn btn-primary" style="width:100%;margin-top:4px;" onclick="testRegister()">Continue →</button>
+          <button class="btn btn-primary" style="width:100%;margin-top:4px;" onclick="testRegister()">Send verification link →</button>
+        </div>
+      </div>
+
+      <!-- SCREEN 1.2: Email sent -->
+      <div class="test-screen" id="test-screen-email-sent">
+        <div style="max-width:480px;margin:0 auto;text-align:center;padding:20px 0;">
+          <div style="width:72px;height:72px;background:#EFF6FF;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 24px;">📧</div>
+          <h2 style="font-size:22px;font-weight:800;margin-bottom:12px;">Check your email</h2>
+          <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:8px;">We sent a verification link to:</p>
+          <div id="test-email-sent-addr" style="font-size:15px;font-weight:700;color:#1D4ED8;background:#EFF6FF;border-radius:10px;padding:10px 20px;display:inline-block;margin-bottom:24px;"></div>
+          <div style="background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:14px;padding:16px 20px;text-align:left;margin-bottom:28px;">
+            <div style="font-size:13px;color:#065F46;line-height:1.7;">
+              <div style="margin-bottom:6px;">1. Open your email inbox</div>
+              <div style="margin-bottom:6px;">2. Find the email from <strong>Speaking Club Hub</strong></div>
+              <div>3. Click the link — you will be signed in automatically</div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">The link expires in 1 hour. Check your spam folder if you don't see it.</div>
+          <button onclick="testBackToRegister()" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;">← Use a different email</button>
         </div>
       </div>
 
       <!-- SCREEN 2: Test list -->
       <div class="test-screen" id="test-screen-list">
-        <div style="margin-bottom:20px;">
-          <span style="font-size:13px;color:var(--muted);">Signed in as: </span>
-          <span style="font-size:13px;font-weight:700;" id="test-list-name"></span>
-          <button onclick="testLogout()" style="margin-left:12px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">Change</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:white;border:1.5px solid var(--border);border-radius:14px;padding:12px 16px;margin-bottom:24px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div id="test-user-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#6366F1);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);" id="test-list-name"></div>
+              <div style="font-size:12px;color:var(--muted);" id="test-list-email"></div>
+            </div>
+          </div>
+          <button onclick="testLogout()" style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:8px;color:#DC2626;font-size:12px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:inherit;transition:all .15s;" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">Exit</button>
         </div>
         <div class="test-list">
           <div class="test-card" id="test-card-1" onclick="testStart(1)">
@@ -2425,6 +2450,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script>
 // ── Firebase ────────────────────────────────────────────────
 const firebaseConfig = {
@@ -2437,6 +2463,11 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
+
+// ── Session state (replaces localStorage for teacher data) ────
+let _teacher = null;      // { name, email, uid } — set after Firebase Auth
+let _reviewCache = null;  // in-memory review data cache
 
 // ── Navigation ──────────────────────────────────────────────
 function showHome() {
@@ -2452,7 +2483,7 @@ function showModule(num) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('module-' + num).classList.add('active');
   document.querySelectorAll('.nav-item').forEach((n,i) => n.classList.toggle('active', i === num));
-  const titles = ['','What Is a Speaking Club?','The Problem','Structure & Timing','Live Triggers','Stage-by-Stage Guide','Tools & Resources','Lesson Planner','Emergency FAQ','Group Management','Knowledge Test'];
+  const titles = ['','What Is a Speaking Club?','The Problem','Structure & Timing','Live Triggers','Stage-by-Stage Guide','Tools & Resources','Lesson Planner','Emergency FAQ','Group Management','Training & Tests'];
   document.getElementById('topbar-title').textContent = titles[num];
   closeSidebar();
   window.scrollTo(0,0);
@@ -3272,6 +3303,14 @@ let testState = {
   answered: false
 };
 
+function _renderUserBlock(name, email) {
+  document.getElementById('test-list-name').textContent = name;
+  const emailEl = document.getElementById('test-list-email');
+  if (emailEl) emailEl.textContent = email;
+  const avatar = document.getElementById('test-user-avatar');
+  if (avatar) avatar.textContent = name.trim().charAt(0).toUpperCase();
+}
+
 function testShowScreen(id) {
   document.querySelectorAll('.test-screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -3281,21 +3320,46 @@ function testRegister() {
   const name = document.getElementById('test-name').value.trim();
   const email = document.getElementById('test-email').value.trim();
   const errEl = document.getElementById('test-reg-error');
+  const btn = document.querySelector('#test-screen-register .btn-primary');
   if (!name) { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
-  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; errEl.style.display = 'block'; return; }
+  if (!email || !email.includes('@') || !email.includes('.')) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
   errEl.style.display = 'none';
-  localStorage.setItem('test_teacher_name', name);
-  localStorage.setItem('test_teacher_email', email);
-  document.getElementById('test-list-name').textContent = name;
-  testCheckDoneCards();
-  const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
-  document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
-  testShowScreen('test-screen-list');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const actionCodeSettings = {
+    url: window.location.origin + window.location.pathname,
+    handleCodeInApp: true,
+  };
+
+  auth.sendSignInLinkToEmail(email, actionCodeSettings)
+    .then(() => {
+      localStorage.setItem('emailForSignIn', email); // temp: needed for magic link on same device
+      localStorage.setItem('_pendingName', name);    // temp: consumed immediately after sign-in
+      document.getElementById('test-email-sent-addr').textContent = email;
+      btn.disabled = false;
+      btn.textContent = 'Send verification link →';
+      testShowScreen('test-screen-email-sent');
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.textContent = 'Send verification link →';
+      errEl.textContent = 'Could not send email. Check the address and try again.';
+      errEl.style.display = 'block';
+      console.error(err);
+    });
+}
+
+function testBackToRegister() {
+  testShowScreen('test-screen-register');
 }
 
 function testLogout() {
-  localStorage.removeItem('test_teacher_name');
-  localStorage.removeItem('test_teacher_email');
+  auth.signOut().catch(() => {});
+  _teacher = null;
+  _reviewCache = null;
+  localStorage.removeItem('emailForSignIn');
+  localStorage.removeItem('_pendingName');
   document.getElementById('test-name').value = '';
   document.getElementById('test-email').value = '';
   // Reset all admin/personal UI
@@ -3303,7 +3367,8 @@ function testLogout() {
   document.getElementById('test-admin-list').innerHTML = '';
   document.getElementById('test-admin-btn-wrap').style.display = 'none';
   document.getElementById('my-answers-section').style.display = 'none';
-  document.getElementById('test-review-notification').style.display = 'none';
+  const reviewNotif = document.getElementById('test-review-notification');
+  if (reviewNotif) reviewNotif.style.display = 'none';
   // Reset test card to default state
   const card = document.getElementById('test-card-1');
   card.classList.remove('done');
@@ -3315,24 +3380,10 @@ function testLogout() {
 }
 
 function testCheckDoneCards() {
-  const email = localStorage.getItem('test_teacher_email');
-  if (!email) return;
-  const results = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-  const local = results.find(r => r.email === email && r.testId === 1);
-  if (local) {
-    _markTestDone(local);
-    return;
-  }
-  // Not in localStorage — try Firestore
-  const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test1';
+  if (!_teacher) return;
+  const docId = _teacher.email.replace(/[^a-z0-9]/gi, '_') + '_test1';
   db.collection('test_results').doc(docId).get().then(doc => {
-    if (!doc.exists) return;
-    const data = doc.data();
-    // Restore to localStorage
-    const all = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-    all.push(data);
-    localStorage.setItem('test_all_results', JSON.stringify(all));
-    _markTestDone(data);
+    if (doc.exists) _markTestDone(doc.data());
   }).catch(() => {});
 }
 
@@ -3357,10 +3408,8 @@ function renderMyAnswers(result) {
   document.getElementById('my-answers-section').style.display = 'block';
   const mcAnswers = (result.answers || []).filter(a => a.type !== 'open');
   const openAnswers = (result.answers || []).filter(a => a.type === 'open');
-  // Prefer review data from Firestore cache if available
-  const reviewCache = JSON.parse(localStorage.getItem('test_review_data') || 'null');
-  const reviews = (reviewCache && reviewCache.email === result.email)
-    ? (reviewCache.reviews || {})
+  const reviews = (_reviewCache && _reviewCache.email === result.email)
+    ? (_reviewCache.reviews || {})
     : (result.reviews || {});
 
   const mcHtml = mcAnswers.map((a, i) => {
@@ -3401,10 +3450,9 @@ function toggleMyAnswers() {
 }
 
 function testStart(id) {
-  const email = localStorage.getItem('test_teacher_email');
-  const localResults = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-  const done = localResults.find(r => r.email === email && r.testId === id);
-  if (done) return; // already taken — block retake
+  if (!_teacher) return;
+  const card = document.getElementById(`test-card-${id}`);
+  if (card && card.classList.contains('done')) return; // already taken
   testShowScreen('test-screen-confirm');
 }
 
@@ -3522,10 +3570,9 @@ function testNext() {
 function testShowResults() {
   const score = testState.answers.filter(a => a.type !== 'open' && a.selected === a.correct).length;
   const mcTotal = TEST_QUESTIONS.filter(q => q.type !== 'open').length;
-  const name = localStorage.getItem('test_teacher_name') || 'Teacher';
-  const email = localStorage.getItem('test_teacher_email') || '';
+  const name  = _teacher?.name  || 'Teacher';
+  const email = _teacher?.email || '';
 
-  // Save result to Firestore (and localStorage as fallback)
   const resultEntry = {
     testId: 1,
     name, email, score,
@@ -3533,12 +3580,7 @@ function testShowResults() {
     timestamp: new Date().toISOString(),
     answers: testState.answers
   };
-  // localStorage fallback
-  const allResults = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-  const idx = allResults.findIndex(r => r.email === email && r.testId === 1);
-  if (idx >= 0) allResults[idx] = resultEntry; else allResults.push(resultEntry);
-  localStorage.setItem('test_all_results', JSON.stringify(allResults));
-  // Firestore save (use email as doc ID so each teacher has one result per test)
+  // Firestore only — single doc per teacher per test
   const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test1';
   db.collection('test_results').doc(docId).set(resultEntry).catch(e => console.warn('Firestore save error:', e));
 
@@ -3701,30 +3743,26 @@ function saveAdminReview(docId, openIdx, btnEl) {
 }
 
 function testCheckReview() {
-  const email = localStorage.getItem('test_teacher_email');
-  if (!email) return;
-  const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test1';
+  if (!_teacher) return;
+  const docId = _teacher.email.replace(/[^a-z0-9]/gi, '_') + '_test1';
   db.collection('test_results').doc(docId).get().then(doc => {
     if (!doc.exists) return;
     const data = doc.data();
     if (data.reviewed) {
-      localStorage.setItem('test_review_data', JSON.stringify(data));
-      // Update "See my answers" button
+      _reviewCache = data;
       const section = document.getElementById('my-answers-section');
       if (section) {
         const btn = section.querySelector('button');
         if (btn) btn.innerHTML = `<span>See my answers &nbsp;<span style="background:#D1FAE5;color:#065F46;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">✅ Open answers reviewed</span></span><span id="my-answers-arrow">▾</span>`;
       }
-      // Re-render with review data
       renderMyAnswers(data);
     }
   }).catch(() => {});
 }
 
 function testShowReview() {
-  const raw = localStorage.getItem('test_review_data');
-  if (!raw) return;
-  const data = JSON.parse(raw);
+  if (!_reviewCache) return;
+  const data = _reviewCache;
   const reviews = data.reviews || {};
   const openAnswers = (data.answers || []).filter(a => a.type === 'open');
   document.getElementById('review-avg-score').textContent = data.averageOpenScore || '—';
@@ -3752,44 +3790,85 @@ function testShowAdmin() {
   const listEl = document.getElementById('test-admin-list');
   listEl.innerHTML = '<p style="font-size:13px;color:var(--muted);">Loading…</p>';
 
-  const localResults = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-
   db.collection('test_results').get()
-    .then(snapshot => {
-      const firestoreResults = snapshot.docs.map(d => d.data());
-      // Merge: Firestore wins if same email+testId exists in both
-      const merged = [...firestoreResults];
-      localResults.forEach(lr => {
-        const exists = merged.find(r => r.email === lr.email && r.testId === lr.testId);
-        if (!exists) merged.push(lr);
-      });
-      renderAdminList(merged);
+    .then(snapshot => renderAdminList(snapshot.docs.map(d => d.data())))
+    .catch(() => renderAdminList([]));
+}
+
+
+// ── Firebase Auth: complete email link sign-in ───────────────
+function _completeEmailSignIn() {
+  if (!auth.isSignInWithEmailLink(window.location.href)) return;
+
+  let email = localStorage.getItem('emailForSignIn');
+  if (!email) {
+    email = window.prompt('Please confirm your email address to finish signing in:');
+  }
+  if (!email) return;
+
+  auth.signInWithEmailLink(email, window.location.href)
+    .then(result => {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      const user = result.user;
+      // Consume the pending name (set on same device during registration)
+      const name = localStorage.getItem('_pendingName') || email.split('@')[0];
+      localStorage.removeItem('emailForSignIn');
+      localStorage.removeItem('_pendingName');
+      // Persist name to Firestore so it's available on any device
+      db.collection('users').doc(user.uid).set({ name, email: user.email }, { merge: true }).catch(() => {});
+      _teacher = { name, email: user.email, uid: user.uid };
+      _onAuthReady();
     })
-    .catch(() => {
-      renderAdminList(localResults);
+    .catch(err => {
+      console.error('Sign-in error:', err);
+      alert('The verification link has expired or already been used. Please request a new one.');
     });
 }
 
+function _onAuthReady() {
+  const { name, email } = _teacher;
+  _renderUserBlock(name, email);
+  testCheckDoneCards();
+  const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
+  document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
+  if (!isAdmin) testCheckReview();
+  testShowScreen('test-screen-list');
+}
 
 function testInitModule() {
-  const name = localStorage.getItem('test_teacher_name');
-  const email = localStorage.getItem('test_teacher_email');
-  if (name && email) {
-    document.getElementById('test-name').value = name;
-    document.getElementById('test-email').value = email;
-    document.getElementById('test-list-name').textContent = name;
-    testCheckDoneCards();
-    const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
+  if (_teacher) {
+    // Already authenticated this session — just re-render
+    _renderUserBlock(_teacher.name, _teacher.email);
+    const isAdmin = _teacher.email.toLowerCase() === 'admnstudyless@gmail.com';
     document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
-    if (!isAdmin) testCheckReview();
     testShowScreen('test-screen-list');
-  } else {
-    testShowScreen('test-screen-register');
+    return;
   }
+  // Wait for Firebase Auth to restore session (cross-device)
+  const unsubscribe = auth.onAuthStateChanged(user => {
+    unsubscribe();
+    if (user && user.email) {
+      db.collection('users').doc(user.uid).get()
+        .then(doc => {
+          const name = (doc.exists && doc.data().name) ? doc.data().name : user.email.split('@')[0];
+          _teacher = { name, email: user.email, uid: user.uid };
+          _onAuthReady();
+        })
+        .catch(() => {
+          _teacher = { name: user.email.split('@')[0], email: user.email, uid: user.uid };
+          _onAuthReady();
+        });
+    } else {
+      testShowScreen('test-screen-register');
+    }
+  });
 }
 
 // Init on load
-document.addEventListener('DOMContentLoaded', initGeminiUI);
+document.addEventListener('DOMContentLoaded', () => {
+  initGeminiUI();
+  _completeEmailSignIn();
+});
 
 // ── Lesson Plan Generator ─────────────────────────────────────
 async function generateLessonPlan() {
@@ -3811,7 +3890,7 @@ async function generateLessonPlan() {
   btn.disabled = true;
 
   const levelDescriptions = {
-    'A1':  'A1 Beginner — very simple sentences, basic everyday vocabulary, present tense only, short simple questions',
+    'A1':  'A1 Beginner — very simple sentences, basic everyday vocabulary (100-500 most common words), present tense only, yes/no questions, 1-3 word answers expected',
     'A2':  'A2 Elementary — simple connected sentences, basic past tense, familiar topics like family, shopping, daily life',
     'B1-': 'B1- Pre-Intermediate — can handle familiar topics, simple opinions, limited range of connectors, some mistakes expected',
     'B1':  'B1 Intermediate — can discuss familiar topics with some detail, express opinions, use present/past/future, B1 CEFR vocabulary',
@@ -3821,7 +3900,42 @@ async function generateLessonPlan() {
 
   const isLowLevel = ['A1','A2','B1-'].includes(level);
 
+  const a1Override = level === 'A1' ? `
+⚠️ CRITICAL A1 OVERRIDE — READ THIS FIRST:
+This is a TRUE BEGINNER class. Students may have ZERO prior English. Some have never studied English at all.
+
+FORBIDDEN at A1 — never use these words or concepts:
+- Any word not in the 500 most common English words
+- Abstract nouns: "society", "relationship", "influence", "importance", "challenge", "impact", "perspective"
+- Phrasal structures: "What does X mean to you?", "How would you describe…", "In what ways…"
+- Complex grammar: conditionals, passive voice, perfect tenses, relative clauses
+- Academic or formal vocabulary of any kind
+
+A1 VOCABULARY RULE — only choose words that are:
+✓ Concrete, visible, touchable objects or simple actions
+✓ Known to a 5-year-old Ukrainian/Russian speaker as English loanwords (taxi, pizza, internet, coffee, sport)
+✓ Answerable with a single common word (happy, big, good, yes, no, home, food, sleep)
+
+A1 QUESTIONS MUST follow ONLY these patterns:
+✓ "Do you like ___?" → student answers Yes/No
+✓ "What is your favourite ___?" → student answers with one word
+✓ "How many ___?" → student answers with a number
+✓ "Where do you ___?" → student answers with a place name
+✓ Binary choice: "A or B?" → student picks one
+
+VOCABULARY for A1: choose 5 words (not 6-8). Every word must be:
+- A word a child aged 5-7 would know in English
+- Directly visible or imaginable (not abstract)
+- Example: GOOD words: "busy", "tired", "angry", "free", "meet"
+- Example: BAD words: "significant", "perspective", "challenge", "community", "interaction"
+
+BREAKOUT TASK for A1: ALWAYS a practical role-play with a simple script. Example: ordering coffee, buying a ticket, asking for directions. Provide exact sentence starters on cards.
+
+ANSWER MODELS for A1: provide for EVERY question, no exceptions. Format: "I like ___ / I don't like ___" or "Yes, I ___ / No, I don't ___".
+` : '';
+
   const prompt = `You are an expert English Speaking Club lesson designer for Study Less — a Ukrainian online language school.
+${a1Override}
 
 STUDY LESS PHILOSOPHY (this shapes every lesson you create):
 The most common student problem is "no real-life language use" — students know grammar and can speak with their teacher, but freeze in real situations (airports, hotels, disagreements). Like a greenhouse plant moved outdoors: it wilts. Study Less Speaking Clubs exist specifically to fix this.
@@ -4135,23 +4249,30 @@ function renderLeadin(leadin) {
 
   let mediaHtml = '';
   if (isImage) {
-    const keywords = encodeURIComponent((leadin.image_prompt || leadin.trigger).split(' ').slice(0,5).join(','));
-    const seed = Math.floor(Math.random() * 9000) + 1000;
-    const unsplashUrl = `https://source.unsplash.com/600x400/?${keywords}&sig=${seed}`;
+    const rawPrompt = leadin.image_prompt || leadin.trigger || 'speaking english lesson';
+    const pollinationsPrompt = encodeURIComponent(`${rawPrompt}, professional photo, warm lighting, high quality`);
+    const seed = Math.floor(Math.random() * 99999);
+    const imgUrl = () => `https://image.pollinations.ai/prompt/${pollinationsPrompt}?width=600&height=400&seed=${Math.floor(Math.random()*99999)}&nologo=true`;
     mediaHtml = `
       <div style="margin:10px 0 14px;border-radius:10px;overflow:hidden;background:#F3F4F6;border:1px solid #E5E7EB;">
-        <div style="position:relative;">
-          <img id="leadin-img" src="${unsplashUrl}"
-            alt="Photo for lesson"
-            style="width:100%;display:block;max-height:340px;object-fit:cover;"
-            onerror="this.parentElement.innerHTML='<div style=\\'padding:14px;color:#9CA3AF;font-size:12px;text-align:center;\\'>⚠️ Photo could not load. Try again.</div>'"
+        <div style="position:relative;min-height:200px;">
+          <div id="leadin-img-loader" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#9CA3AF;font-size:13px;background:#F9FAFB;">
+            <div style="width:28px;height:28px;border:3px solid #E5E7EB;border-top-color:#6366F1;border-radius:50%;animation:spin .8s linear infinite;"></div>
+            Generating image…
+          </div>
+          <img id="leadin-img"
+            src="https://image.pollinations.ai/prompt/${pollinationsPrompt}?width=600&height=400&seed=${seed}&nologo=true"
+            alt="AI image for lesson"
+            style="width:100%;display:block;max-height:340px;object-fit:cover;opacity:0;transition:opacity .4s;"
+            onload="this.style.opacity='1';document.getElementById('leadin-img-loader').style.display='none';"
+            onerror="document.getElementById('leadin-img-loader').innerHTML='<div style=\\'padding:14px;color:#9CA3AF;font-size:12px;text-align:center;\\'>⚠️ Image could not generate. Try regenerating.</div>'"
           />
-          <button onclick="document.getElementById('leadin-img').src='https://source.unsplash.com/600x400/?${keywords}&sig='+Math.floor(Math.random()*9000)"
+          <button onclick="(function(){const l=document.getElementById('leadin-img-loader');l.style.display='flex';l.innerHTML='<div style=\\'width:28px;height:28px;border:3px solid #E5E7EB;border-top-color:#6366F1;border-radius:50%;animation:spin .8s linear infinite;\\'></div>Generating…';const img=document.getElementById('leadin-img');img.style.opacity='0';img.src='https://image.pollinations.ai/prompt/${pollinationsPrompt}?width=600&height=400&seed='+Math.floor(Math.random()*99999)+'&nologo=true';})()"
             style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">
-            🔄 New photo
+            🔄 New image
           </button>
         </div>
-        <div style="padding:8px 12px;font-size:11px;color:#6B7280;background:#F9FAFB;">📷 Photo from Unsplash · <a href="https://unsplash.com/s/photos/${keywords}" target="_blank" style="color:#6366F1;">browse more</a></div>
+        <div style="padding:8px 12px;font-size:11px;color:#6B7280;background:#F9FAFB;">🤖 AI-generated image · Pollinations.ai</div>
       </div>`;
   } else if (isVideo) {
     const topic = document.getElementById('lp-topic')?.value?.trim() || '';

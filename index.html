@@ -647,8 +647,10 @@
     display: flex; align-items: center; gap: 7px;
     background: var(--bg); border: 1.5px solid var(--border); border-radius: 20px;
     padding: 4px 12px 4px 5px; cursor: pointer; font-family: inherit;
-    transition: all .15s; color: var(--text);
+    transition: all .15s, opacity .2s; color: var(--text);
+    opacity: 0;
   }
+  .profile-topbar-btn.ready { opacity: 1; }
   .profile-topbar-btn:hover { border-color: #6366F1; background: #EEF2FF; }
   .profile-avatar-sm {
     width: 28px; height: 28px; border-radius: 50%;
@@ -3866,20 +3868,18 @@ function closeProfile() {
 }
 
 function _updateTopbarProfile() {
+  const btn = document.getElementById('topbar-profile-btn');
   const avatarEl = document.getElementById('topbar-avatar');
   const labelEl = document.getElementById('topbar-profile-label');
-  if (!avatarEl || !labelEl) return;
+  if (!avatarEl || !labelEl || !btn) return;
   if (_teacher) {
     avatarEl.textContent = _teacher.name.trim().charAt(0).toUpperCase();
-    avatarEl.style.fontSize = '14px';
-    avatarEl.style.color = 'white';
     labelEl.textContent = _teacher.name;
   } else {
     avatarEl.textContent = '?';
-    avatarEl.style.fontSize = '16px';
-    avatarEl.style.color = 'white';
     labelEl.textContent = 'Sign in';
   }
+  btn.classList.add('ready');
 }
 
 function _updateProfileDrawer() {
@@ -4151,7 +4151,7 @@ function testInitModule() {
 function _initGlobalAuth() {
   const unsub = auth.onAuthStateChanged(user => {
     unsub();
-    if (!user || !user.email) return;
+    if (!user || !user.email) { _updateTopbarProfile(); return; }
     // Set teacher from Auth immediately (no Firestore wait)
     if (!_teacher) {
       _teacher = { name: user.email.split('@')[0], email: user.email, uid: user.uid };

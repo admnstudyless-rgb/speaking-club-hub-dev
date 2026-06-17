@@ -4715,25 +4715,35 @@ function renderLeadin(leadin) {
 
   let mediaHtml = '';
   if (isImage) {
-    const rawPrompt = leadin.image_prompt || leadin.trigger || 'speaking english lesson';
     const lessonTopic = document.getElementById('lp-topic')?.value?.trim() || '';
-    const pexelsQuery = leadin.pexels_search || lessonTopic || rawPrompt.split(' ').slice(0,3).join(' ');
-    window._lessonImageData = { pexelsQuery, lexicaPrompt: rawPrompt };
+    const pexelsQuery = leadin.pexels_search || lessonTopic || (leadin.trigger || 'english lesson').split(' ').slice(0,3).join(' ');
+    const q = encodeURIComponent(pexelsQuery);
     mediaHtml = `
-      <div style="margin:10px 0 14px;border-radius:10px;overflow:hidden;background:#F3F4F6;border:1px solid #E5E7EB;">
-        <div style="position:relative;min-height:220px;">
-          <div id="leadin-img-loader" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#9CA3AF;font-size:13px;background:#F9FAFB;">
-            <div style="width:28px;height:28px;border:3px solid #E5E7EB;border-top-color:#6366F1;border-radius:50%;animation:spin .8s linear infinite;"></div>
-            Loading image…
+      <div style="margin:10px 0 14px;border-radius:10px;border:1.5px solid #E0E7FF;background:#F5F3FF;padding:14px 16px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="width:38px;height:38px;background:#8B5CF6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🖼️</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#1F2937;">Find an image for the lesson</div>
+            <div style="font-size:11px;color:#6B7280;">Open a stock site, pick any photo, show it on screen</div>
           </div>
-          <img id="leadin-img" alt="Image for lesson"
-            style="width:100%;display:block;max-height:360px;object-fit:cover;opacity:0;transition:opacity .4s;" />
-          <button onclick="_reloadLessonImage()"
-            style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">
-            🔄 New image
-          </button>
         </div>
-        <div id="leadin-img-source" style="padding:8px 12px;font-size:11px;color:#6B7280;background:#F9FAFB;"></div>
+        <div style="font-size:11px;color:#6B7280;margin-bottom:6px;">Suggested search keywords:</div>
+        <div style="font-size:13px;font-weight:700;color:#4C1D95;background:white;border-radius:8px;padding:8px 12px;border:1px solid #DDD6FE;margin-bottom:12px;">🔍 ${pexelsQuery}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <a href="https://pixabay.com/images/search/${q}/" target="_blank"
+            style="display:inline-flex;align-items:center;gap:6px;background:#2EC27E;color:white;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
+            Pixabay →
+          </a>
+          <a href="https://unsplash.com/s/photos/${q}" target="_blank"
+            style="display:inline-flex;align-items:center;gap:6px;background:#111827;color:white;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
+            Unsplash →
+          </a>
+          <a href="https://www.pexels.com/search/${q}/" target="_blank"
+            style="display:inline-flex;align-items:center;gap:6px;background:#05A081;color:white;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
+            Pexels →
+          </a>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#9CA3AF;">All sites are free for educational use · No registration needed to browse</div>
       </div>`;
   } else if (isVideo) {
     const topic = document.getElementById('lp-topic')?.value?.trim() || '';
@@ -4770,10 +4780,6 @@ function renderLeadin(leadin) {
       ${leadin.note ? `<div class="lp-note">💡 ${leadin.note}</div>` : ''}
     </div>`;
 
-  if (isImage) {
-    const d = window._lessonImageData || {};
-    _loadLessonImage(d.pexelsQuery || 'english lesson', d.lexicaPrompt || 'english lesson');
-  }
 }
 
 async function _loadLessonImage(pexelsQuery, lexicaPrompt) {

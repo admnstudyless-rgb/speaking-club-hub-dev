@@ -2512,6 +2512,7 @@ let _teacher = null;      // { name, email, uid } — set after Firebase Auth
 let _reviewCache = null;  // in-memory review data cache
 let _notifUnsubs = [];    // Firestore real-time notification listeners
 let _pexelsKey = null;    // Pexels API key for lesson images
+let _hfToken = null;      // Hugging Face token for AI image generation
 
 // ── Gemini state (replaces localStorage for AI settings) ──────
 const _gemini = {
@@ -2949,6 +2950,39 @@ function removeGeminiKey() {
       .catch(e => console.error('Failed to remove key:', e));
   }
   initGeminiUI();
+}
+
+function initHfUI() {
+  const setup = document.getElementById('hf-setup');
+  const status = document.getElementById('hf-status');
+  if (!setup || !status) return;
+  if (_hfToken) { setup.style.display = 'none'; status.style.display = 'flex'; }
+  else { setup.style.display = 'block'; status.style.display = 'none'; }
+}
+
+function saveHfToken() {
+  const token = document.getElementById('hf-token-input').value.trim();
+  if (!token) return;
+  const btn = document.getElementById('hf-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  _hfToken = token;
+  if (_teacher) {
+    db.collection('users').doc(_teacher.uid)
+      .set({ hfToken: token }, { merge: true })
+      .then(() => { initHfUI(); btn.disabled = false; btn.textContent = 'Save'; })
+      .catch(e => { _hfToken = null; btn.disabled = false; btn.textContent = 'Save'; console.error(e); });
+  } else { initHfUI(); }
+}
+
+function removeHfToken() {
+  _hfToken = null;
+  if (_teacher) {
+    db.collection('users').doc(_teacher.uid)
+      .set({ hfToken: firebase.firestore.FieldValue.delete() }, { merge: true })
+      .catch(e => console.error(e));
+  }
+  document.getElementById('hf-token-input').value = '';
+  initHfUI();
 }
 
 function initPexelsUI() {
@@ -4180,9 +4214,11 @@ function _onAuthReady() {
       const data = doc.data();
       if (data.geminiKey) _gemini.key = data.geminiKey;
       if (data.pexelsKey) _pexelsKey = data.pexelsKey;
+      if (data.hfToken) _hfToken = data.hfToken;
       if (data.seenAnnouncements) _teacher._seenAnnouncements = data.seenAnnouncements;
     }
     initGeminiUI();
+    initHfUI();
     initPexelsUI();
     _updateProfileDrawer();
     _loadNotifications();
@@ -4240,6 +4276,7 @@ function _initGlobalAuth() {
       if (data.name) _teacher.name = data.name;
       if (data.geminiKey) _gemini.key = data.geminiKey;
       if (data.pexelsKey) _pexelsKey = data.pexelsKey;
+      if (data.hfToken) _hfToken = data.hfToken;
       if (data.seenAnnouncements) _teacher._seenAnnouncements = data.seenAnnouncements;
       _updateTopbarProfile();
       initGeminiUI();
@@ -4712,42 +4749,65 @@ async function _loadLessonImage(pexelsQuery, lexicaPrompt) {
   img.style.opacity = '0';
 
   try {
-    let url = null, sourceName = '';
+    let url = null, sourceName = '', isBlob = false;
 
-    if (_pexelsKey) {
-      const q = encodeURIComponent(pexelsQuery);
-      const resp = await fetch(`https://api.pexels.com/v1/search?query=${q}&per_page=15&orientation=landscape`, {
-        headers: { Authorization: _pexelsKey }
-      });
-      const data = await resp.json();
-      if (data.photos && data.photos.length > 0) {
-        const pick = data.photos[Math.floor(Math.random() * Math.min(data.photos.length, 10))];
-        url = pick.src.large;
-        sourceName = `📷 Photo by <a href="${pick.photographer_url}" target="_blank" style="color:#6B7280;">${pick.photographer}</a> · Pexels`;
-      }
+    // 1. Hugging Face (FLUX) — best AI quality
+    if (_hfToken && lexicaPrompt) {
+      try {
+        const resp = await fetch('https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${_hfToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ inputs: lexicaPrompt })
+        });
+        if (resp.ok && resp.headers.get('content-type')?.startsWith('image/')) {
+          const blob = await resp.blob();
+          url = URL.createObjectURL(blob);
+          isBlob = true;
+          sourceName = '🤖 AI-generated · Hugging Face FLUX';
+        }
+      } catch(e) {}
     }
 
+    // 2. Pexels — real photos
+    if (!url && _pexelsKey) {
+      try {
+        const q = encodeURIComponent(pexelsQuery);
+        const resp = await fetch(`https://api.pexels.com/v1/search?query=${q}&per_page=15&orientation=landscape`, {
+          headers: { Authorization: _pexelsKey }
+        });
+        const data = await resp.json();
+        if (data.photos && data.photos.length > 0) {
+          const pick = data.photos[Math.floor(Math.random() * Math.min(data.photos.length, 10))];
+          url = pick.src.large;
+          sourceName = `📷 Photo by <a href="${pick.photographer_url}" target="_blank" style="color:#6B7280;">${pick.photographer}</a> · Pexels`;
+        }
+      } catch(e) {}
+    }
+
+    // 3. Lexica.art — free fallback
     if (!url) {
-      const q = encodeURIComponent(lexicaPrompt || pexelsQuery);
-      const resp = await fetch(`https://lexica.art/api/v1/search?q=${q}`);
-      const data = await resp.json();
-      if (data.images && data.images.length > 0) {
-        const pick = data.images[Math.floor(Math.random() * Math.min(data.images.length, 8))];
-        url = pick.src;
-        sourceName = '🤖 AI-generated image · Lexica.art';
-      }
+      try {
+        const q = encodeURIComponent(lexicaPrompt || pexelsQuery);
+        const resp = await fetch(`https://lexica.art/api/v1/search?q=${q}`);
+        const data = await resp.json();
+        if (data.images && data.images.length > 0) {
+          const pick = data.images[Math.floor(Math.random() * Math.min(data.images.length, 8))];
+          url = pick.src;
+          sourceName = '🤖 AI-generated image · Lexica.art';
+        }
+      } catch(e) {}
     }
 
     if (url) {
-      img.onload = () => { img.style.opacity = '1'; loader.style.display = 'none'; };
-      img.onerror = () => { loader.innerHTML = '<div style="padding:14px;color:#9CA3AF;font-size:12px;text-align:center;">⚠️ Could not load image. Try again.</div>'; };
+      img.onload = () => { img.style.opacity = '1'; loader.style.display = 'none'; if (isBlob) URL.revokeObjectURL(url); };
+      img.onerror = () => { loader.innerHTML = '<div style="padding:14px;color:#9CA3AF;font-size:12px;text-align:center;">⚠️ Could not load. Try again.</div>'; };
       img.src = url;
       if (source) source.innerHTML = sourceName;
     } else {
       loader.innerHTML = '<div style="padding:14px;color:#9CA3AF;font-size:12px;text-align:center;">⚠️ No image found. Try regenerating.</div>';
     }
   } catch(e) {
-    loader.innerHTML = '<div style="padding:14px;color:#9CA3AF;font-size:12px;text-align:center;">⚠️ Could not load image. Check your connection.</div>';
+    loader.innerHTML = '<div style="padding:14px;color:#9CA3AF;font-size:12px;text-align:center;">⚠️ Could not load image.</div>';
   }
 }
 
@@ -5092,6 +5152,22 @@ function printLessonPlan() {
 
         <div id="usage-display" style="background:#F8FAFF;border:1.5px solid #E0E7FF;border-radius:10px;padding:10px 14px;margin-bottom:16px;">
           <span style="color:#6B7280;font-size:12px;">No requests today yet.</span>
+        </div>
+
+        <div style="border-top:1px solid #F3F4F6;padding-top:14px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:4px;">🤖 Hugging Face — AI image generation</div>
+          <div style="font-size:11px;color:#6B7280;margin-bottom:10px;">Free token at <a href="https://huggingface.co/settings/tokens" target="_blank" style="color:#6366F1;">huggingface.co/settings/tokens</a> — FLUX model, much better quality than Pollinations.</div>
+          <div id="hf-setup">
+            <div style="display:flex;gap:8px;">
+              <input type="password" id="hf-token-input" placeholder="hf_..."
+                style="flex:1;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
+              <button onclick="saveHfToken()" style="background:#6366F1;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:9px 14px;cursor:pointer;font-family:inherit;white-space:nowrap;" id="hf-save-btn">Save</button>
+            </div>
+          </div>
+          <div id="hf-status" style="display:none;align-items:center;justify-content:space-between;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:8px;padding:9px 12px;">
+            <span style="font-size:13px;color:#059669;font-weight:700;">✓ Hugging Face connected</span>
+            <button onclick="removeHfToken()" style="background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;padding:4px 10px;font-family:inherit;">Change</button>
+          </div>
         </div>
 
         <div style="border-top:1px solid #F3F4F6;padding-top:14px;margin-bottom:12px;">

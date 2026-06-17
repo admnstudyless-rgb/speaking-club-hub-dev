@@ -2465,6 +2465,10 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
+// ── Session state (replaces localStorage for teacher data) ────
+let _teacher = null;      // { name, email, uid } — set after Firebase Auth
+let _reviewCache = null;  // in-memory review data cache
+
 // ── Navigation ──────────────────────────────────────────────
 function showHome() {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -3330,8 +3334,8 @@ function testRegister() {
 
   auth.sendSignInLinkToEmail(email, actionCodeSettings)
     .then(() => {
-      localStorage.setItem('emailForSignIn', email);
-      localStorage.setItem('test_teacher_name', name);
+      localStorage.setItem('emailForSignIn', email); // temp: needed for magic link on same device
+      localStorage.setItem('_pendingName', name);    // temp: consumed immediately after sign-in
       document.getElementById('test-email-sent-addr').textContent = email;
       btn.disabled = false;
       btn.textContent = 'Send verification link →';
@@ -3352,9 +3356,10 @@ function testBackToRegister() {
 
 function testLogout() {
   auth.signOut().catch(() => {});
-  localStorage.removeItem('test_teacher_name');
-  localStorage.removeItem('test_teacher_email');
+  _teacher = null;
+  _reviewCache = null;
   localStorage.removeItem('emailForSignIn');
+  localStorage.removeItem('_pendingName');
   document.getElementById('test-name').value = '';
   document.getElementById('test-email').value = '';
   // Reset all admin/personal UI
@@ -3375,24 +3380,10 @@ function testLogout() {
 }
 
 function testCheckDoneCards() {
-  const email = localStorage.getItem('test_teacher_email');
-  if (!email) return;
-  const results = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-  const local = results.find(r => r.email === email && r.testId === 1);
-  if (local) {
-    _markTestDone(local);
-    return;
-  }
-  // Not in localStorage — try Firestore
-  const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test1';
+  if (!_teacher) return;
+  const docId = _teacher.email.replace(/[^a-z0-9]/gi, '_') + '_test1';
   db.collection('test_results').doc(docId).get().then(doc => {
-    if (!doc.exists) return;
-    const data = doc.data();
-    // Restore to localStorage
-    const all = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-    all.push(data);
-    localStorage.setItem('test_all_results', JSON.stringify(all));
-    _markTestDone(data);
+    if (doc.exists) _markTestDone(doc.data());
   }).catch(() => {});
 }
 
@@ -3417,10 +3408,8 @@ function renderMyAnswers(result) {
   document.getElementById('my-answers-section').style.display = 'block';
   const mcAnswers = (result.answers || []).filter(a => a.type !== 'open');
   const openAnswers = (result.answers || []).filter(a => a.type === 'open');
-  // Prefer review data from Firestore cache if available
-  const reviewCache = JSON.parse(localStorage.getItem('test_review_data') || 'null');
-  const reviews = (reviewCache && reviewCache.email === result.email)
-    ? (reviewCache.reviews || {})
+  const reviews = (_reviewCache && _reviewCache.email === result.email)
+    ? (_reviewCache.reviews || {})
     : (result.reviews || {});
 
   const mcHtml = mcAnswers.map((a, i) => {
@@ -3461,10 +3450,9 @@ function toggleMyAnswers() {
 }
 
 function testStart(id) {
-  const email = localStorage.getItem('test_teacher_email');
-  const localResults = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-  const done = localResults.find(r => r.email === email && r.testId === id);
-  if (done) return; // already taken — block retake
+  if (!_teacher) return;
+  const card = document.getElementById(`test-card-${id}`);
+  if (card && card.classList.contains('done')) return; // already taken
   testShowScreen('test-screen-confirm');
 }
 
@@ -3582,10 +3570,9 @@ function testNext() {
 function testShowResults() {
   const score = testState.answers.filter(a => a.type !== 'open' && a.selected === a.correct).length;
   const mcTotal = TEST_QUESTIONS.filter(q => q.type !== 'open').length;
-  const name = localStorage.getItem('test_teacher_name') || 'Teacher';
-  const email = localStorage.getItem('test_teacher_email') || '';
+  const name  = _teacher?.name  || 'Teacher';
+  const email = _teacher?.email || '';
 
-  // Save result to Firestore (and localStorage as fallback)
   const resultEntry = {
     testId: 1,
     name, email, score,
@@ -3593,12 +3580,7 @@ function testShowResults() {
     timestamp: new Date().toISOString(),
     answers: testState.answers
   };
-  // localStorage fallback
-  const allResults = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-  const idx = allResults.findIndex(r => r.email === email && r.testId === 1);
-  if (idx >= 0) allResults[idx] = resultEntry; else allResults.push(resultEntry);
-  localStorage.setItem('test_all_results', JSON.stringify(allResults));
-  // Firestore save (use email as doc ID so each teacher has one result per test)
+  // Firestore only — single doc per teacher per test
   const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test1';
   db.collection('test_results').doc(docId).set(resultEntry).catch(e => console.warn('Firestore save error:', e));
 
@@ -3761,30 +3743,26 @@ function saveAdminReview(docId, openIdx, btnEl) {
 }
 
 function testCheckReview() {
-  const email = localStorage.getItem('test_teacher_email');
-  if (!email) return;
-  const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test1';
+  if (!_teacher) return;
+  const docId = _teacher.email.replace(/[^a-z0-9]/gi, '_') + '_test1';
   db.collection('test_results').doc(docId).get().then(doc => {
     if (!doc.exists) return;
     const data = doc.data();
     if (data.reviewed) {
-      localStorage.setItem('test_review_data', JSON.stringify(data));
-      // Update "See my answers" button
+      _reviewCache = data;
       const section = document.getElementById('my-answers-section');
       if (section) {
         const btn = section.querySelector('button');
         if (btn) btn.innerHTML = `<span>See my answers &nbsp;<span style="background:#D1FAE5;color:#065F46;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">✅ Open answers reviewed</span></span><span id="my-answers-arrow">▾</span>`;
       }
-      // Re-render with review data
       renderMyAnswers(data);
     }
   }).catch(() => {});
 }
 
 function testShowReview() {
-  const raw = localStorage.getItem('test_review_data');
-  if (!raw) return;
-  const data = JSON.parse(raw);
+  if (!_reviewCache) return;
+  const data = _reviewCache;
   const reviews = data.reviews || {};
   const openAnswers = (data.answers || []).filter(a => a.type === 'open');
   document.getElementById('review-avg-score').textContent = data.averageOpenScore || '—';
@@ -3812,45 +3790,11 @@ function testShowAdmin() {
   const listEl = document.getElementById('test-admin-list');
   listEl.innerHTML = '<p style="font-size:13px;color:var(--muted);">Loading…</p>';
 
-  const localResults = JSON.parse(localStorage.getItem('test_all_results') || '[]');
-
   db.collection('test_results').get()
-    .then(snapshot => {
-      const firestoreResults = snapshot.docs.map(d => d.data());
-      // Merge: Firestore wins if same email+testId exists in both
-      const merged = [...firestoreResults];
-      localResults.forEach(lr => {
-        const exists = merged.find(r => r.email === lr.email && r.testId === lr.testId);
-        if (!exists) merged.push(lr);
-      });
-      renderAdminList(merged);
-    })
-    .catch(() => {
-      renderAdminList(localResults);
-    });
+    .then(snapshot => renderAdminList(snapshot.docs.map(d => d.data())))
+    .catch(() => renderAdminList([]));
 }
 
-
-function testInitModule() {
-  const name = localStorage.getItem('test_teacher_name');
-  const email = localStorage.getItem('test_teacher_email');
-  if (name && email) {
-    document.getElementById('test-name').value = name;
-    document.getElementById('test-email').value = email;
-    _onAuthReady(name, email);
-  } else {
-    // Check if Firebase Auth session exists (e.g. localStorage was cleared)
-    const user = auth.currentUser;
-    if (user && user.email) {
-      const fallbackName = user.email.split('@')[0];
-      localStorage.setItem('test_teacher_name', fallbackName);
-      localStorage.setItem('test_teacher_email', user.email);
-      _onAuthReady(fallbackName, user.email);
-    } else {
-      testShowScreen('test-screen-register');
-    }
-  }
-}
 
 // ── Firebase Auth: complete email link sign-in ───────────────
 function _completeEmailSignIn() {
@@ -3864,13 +3808,16 @@ function _completeEmailSignIn() {
 
   auth.signInWithEmailLink(email, window.location.href)
     .then(result => {
-      // Clean up the URL token so it doesn't repeat on refresh
       window.history.replaceState({}, document.title, window.location.pathname);
+      const user = result.user;
+      // Consume the pending name (set on same device during registration)
+      const name = localStorage.getItem('_pendingName') || email.split('@')[0];
       localStorage.removeItem('emailForSignIn');
-      const name = localStorage.getItem('test_teacher_name') || email.split('@')[0];
-      localStorage.setItem('test_teacher_name', name);
-      localStorage.setItem('test_teacher_email', email);
-      _onAuthReady(name, email);
+      localStorage.removeItem('_pendingName');
+      // Persist name to Firestore so it's available on any device
+      db.collection('users').doc(user.uid).set({ name, email: user.email }, { merge: true }).catch(() => {});
+      _teacher = { name, email: user.email, uid: user.uid };
+      _onAuthReady();
     })
     .catch(err => {
       console.error('Sign-in error:', err);
@@ -3878,13 +3825,43 @@ function _completeEmailSignIn() {
     });
 }
 
-function _onAuthReady(name, email) {
+function _onAuthReady() {
+  const { name, email } = _teacher;
   _renderUserBlock(name, email);
   testCheckDoneCards();
   const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
   document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
   if (!isAdmin) testCheckReview();
   testShowScreen('test-screen-list');
+}
+
+function testInitModule() {
+  if (_teacher) {
+    // Already authenticated this session — just re-render
+    _renderUserBlock(_teacher.name, _teacher.email);
+    const isAdmin = _teacher.email.toLowerCase() === 'admnstudyless@gmail.com';
+    document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
+    testShowScreen('test-screen-list');
+    return;
+  }
+  // Wait for Firebase Auth to restore session (cross-device)
+  const unsubscribe = auth.onAuthStateChanged(user => {
+    unsubscribe();
+    if (user && user.email) {
+      db.collection('users').doc(user.uid).get()
+        .then(doc => {
+          const name = (doc.exists && doc.data().name) ? doc.data().name : user.email.split('@')[0];
+          _teacher = { name, email: user.email, uid: user.uid };
+          _onAuthReady();
+        })
+        .catch(() => {
+          _teacher = { name: user.email.split('@')[0], email: user.email, uid: user.uid };
+          _onAuthReady();
+        });
+    } else {
+      testShowScreen('test-screen-register');
+    }
+  });
 }
 
 // Init on load

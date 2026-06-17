@@ -2917,11 +2917,24 @@ function findVideo(source) {
 function saveGeminiKey() {
   const key = document.getElementById('gemini-key-input').value.trim();
   if (!key) return;
+  const btn = document.querySelector('#gemini-setup .btn-primary');
   _gemini.key = key;
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  const done = () => { initGeminiUI(); };
   if (_teacher) {
-    db.collection('users').doc(_teacher.uid).update({ geminiKey: key }).catch(() => {});
+    db.collection('users').doc(_teacher.uid)
+      .set({ geminiKey: key }, { merge: true })
+      .then(done)
+      .catch(e => {
+        _gemini.key = null;
+        const inp = document.getElementById('gemini-key-input');
+        if (inp) inp.style.borderColor = '#EF4444';
+        if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
+        console.error('Failed to save Gemini key:', e);
+      });
+  } else {
+    done();
   }
-  initGeminiUI();
 }
 
 function removeGeminiKey() {
@@ -2930,7 +2943,9 @@ function removeGeminiKey() {
   _gemini.modelsList = null;
   _gemini.modelsTs = 0;
   if (_teacher) {
-    db.collection('users').doc(_teacher.uid).update({ geminiKey: null }).catch(() => {});
+    db.collection('users').doc(_teacher.uid)
+      .set({ geminiKey: firebase.firestore.FieldValue.delete() }, { merge: true })
+      .catch(e => console.error('Failed to remove key:', e));
   }
   initGeminiUI();
 }

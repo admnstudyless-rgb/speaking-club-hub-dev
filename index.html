@@ -2469,6 +2469,15 @@ const auth = firebase.auth();
 let _teacher = null;      // { name, email, uid } — set after Firebase Auth
 let _reviewCache = null;  // in-memory review data cache
 
+// ── Gemini state (replaces localStorage for AI settings) ──────
+const _gemini = {
+  key: null,          // API key — loaded from Firestore after auth
+  model: null,        // selected model — in-memory cache
+  modelsList: null,   // available models list — in-memory cache
+  modelsTs: 0,        // timestamp of last model list fetch
+  usage: {}           // daily usage stats — in-memory, resets with session
+};
+
 // ── Navigation ──────────────────────────────────────────────
 function showHome() {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -2865,22 +2874,28 @@ function findVideo(source) {
 function saveGeminiKey() {
   const key = document.getElementById('gemini-key-input').value.trim();
   if (!key) return;
-  localStorage.setItem('gemini_key', key);
+  _gemini.key = key;
+  if (_teacher) {
+    db.collection('users').doc(_teacher.uid).update({ geminiKey: key }).catch(() => {});
+  }
   initGeminiUI();
 }
 
 function removeGeminiKey() {
-  localStorage.removeItem('gemini_key');
-  localStorage.removeItem('gemini_model');
-  localStorage.removeItem('gemini_models_list');
-  localStorage.removeItem('gemini_models_ts');
+  _gemini.key = null;
+  _gemini.model = null;
+  _gemini.modelsList = null;
+  _gemini.modelsTs = 0;
+  if (_teacher) {
+    db.collection('users').doc(_teacher.uid).update({ geminiKey: null }).catch(() => {});
+  }
   initGeminiUI();
 }
 
 function resetGeminiModel() {
-  localStorage.removeItem('gemini_model');
-  localStorage.removeItem('gemini_models_list');
-  localStorage.removeItem('gemini_models_ts');
+  _gemini.model = null;
+  _gemini.modelsList = null;
+  _gemini.modelsTs = 0;
   const btn = document.getElementById('reset-model-btn');
   if (btn) { btn.textContent = '✓ Done! Try generating again'; btn.style.background = '#059669'; }
 }
@@ -2899,8 +2914,7 @@ function getPacificDateStr() {
 
 function trackApiCall(model, success, errorMsg) {
   const today = getPacificDateStr();
-  const raw = localStorage.getItem('gemini_usage') || '{}';
-  const usage = JSON.parse(raw);
+  const usage = _gemini.usage;
   if (usage.date !== today) { usage.date = today; usage.total = 0; usage.models = {}; }
   usage.total = (usage.total || 0) + 1;
   if (!usage.models[model]) usage.models[model] = { calls: 0, exhausted: false };
@@ -2909,15 +2923,12 @@ function trackApiCall(model, success, errorMsg) {
     usage.models[model].exhausted = true;
   }
   if (success) usage.models[model].exhausted = false;
-  localStorage.setItem('gemini_usage', JSON.stringify(usage));
   updateUsageDisplay();
 }
 
 function resetUsageForModel(model) {
-  const raw = localStorage.getItem('gemini_usage') || '{}';
-  const usage = JSON.parse(raw);
+  const usage = _gemini.usage;
   if (usage.models && usage.models[model]) usage.models[model].exhausted = false;
-  localStorage.setItem('gemini_usage', JSON.stringify(usage));
   updateUsageDisplay();
 }
 
@@ -2925,8 +2936,7 @@ function updateUsageDisplay() {
   const el = document.getElementById('usage-display');
   if (!el) return;
   const today = getPacificDateStr();
-  const raw = localStorage.getItem('gemini_usage') || '{}';
-  const usage = JSON.parse(raw);
+  const usage = _gemini.usage;
   if (usage.date !== today) { el.innerHTML = '<span style="color:#6B7280;font-size:12px;">No requests today yet.</span>'; return; }
 
   const resetTime = (() => {
@@ -2965,7 +2975,7 @@ function showRateLimitCountdown(errorMsg, retryFn, containerId) {
 }
 
 function initGeminiUI() {
-  const key = localStorage.getItem('gemini_key');
+  const key = _gemini.key;
   document.getElementById('gemini-setup').style.display = key ? 'none' : 'block';
   document.getElementById('gemini-status').style.display = key ? 'flex' : 'none';
   const badge = document.getElementById('ai-settings-badge');
@@ -2980,7 +2990,7 @@ async function generateTrigger() {
   const level = document.getElementById('trig-level').value;
   const type  = document.getElementById('trig-type').value;
   const btn   = document.getElementById('gen-btn');
-  const key   = localStorage.getItem('gemini_key');
+  const key   = _gemini.key;
 
   btn.innerHTML = '<span class="spinner"></span>Generating…';
   btn.disabled = true;
@@ -3011,9 +3021,9 @@ Respond ONLY with valid JSON, no markdown:
         .finally(() => clearTimeout(timer));
     };
 
-    const cachedModel = localStorage.getItem('gemini_model');
-    const cachedListRaw = localStorage.getItem('gemini_models_list');
-    const cachedListTime = parseInt(localStorage.getItem('gemini_models_ts') || '0');
+    const cachedModel = _gemini.model;
+    const cachedListRaw = _gemini.modelsList ? JSON.stringify(_gemini.modelsList) : null;
+    const cachedListTime = _gemini.modelsTs;
     const listFresh = cachedListRaw && (Date.now() - cachedListTime < 3600000);
 const fallback = [
   'gemini-3.1-flash-lite', 
@@ -3037,8 +3047,8 @@ const fallback = [
             .map(m => m.name.replace('models/', ''));
           const discovered = fallback.filter(m => apiNames.includes(m));
           models = discovered.length ? discovered : fallback;
-          localStorage.setItem('gemini_models_list', JSON.stringify(models));
-          localStorage.setItem('gemini_models_ts', Date.now().toString());
+          _gemini.modelsList = models;
+          _gemini.modelsTs = Date.now();
         }
       } catch(e) {}
       if (!models.length) models = fallback;
@@ -3071,10 +3081,10 @@ const fallback = [
           const err = await res.json().catch(() => ({}));
           lastError = err?.error?.message || `HTTP ${res.status}`;
           trackApiCall(model, false, lastError);
-          localStorage.removeItem('gemini_model');
+          _gemini.model = null;
           if (lastError.includes('Interactions API') || lastError.includes('only supports')) {
-            localStorage.removeItem('gemini_models_list');
-            localStorage.removeItem('gemini_models_ts');
+            _gemini.modelsList = null;
+            _gemini.modelsTs = 0;
           }
           continue;
         }
@@ -3086,7 +3096,7 @@ const fallback = [
         const json = JSON.parse(match[0]);
 
         trackApiCall(model, true, '');
-        localStorage.setItem('gemini_model', model);
+        _gemini.model = model;
         document.getElementById('trig-text').innerHTML = json.trigger;
         document.getElementById('trig-why').innerHTML = '🎯 <strong>Why it works:</strong> ' + json.why;
         document.getElementById('trigger-result').classList.add('show');
@@ -3095,7 +3105,7 @@ const fallback = [
         return;
       } catch(e) {
         lastError = e.name === 'AbortError' ? `Timeout on model ${model}` : e.message;
-        if (model === cachedModel) localStorage.removeItem('gemini_model');
+        if (model === cachedModel) _gemini.model = null;
         continue;
       }
     }
@@ -3826,8 +3836,15 @@ function _completeEmailSignIn() {
 }
 
 function _onAuthReady() {
-  const { name, email } = _teacher;
+  const { name, email, uid } = _teacher;
   _renderUserBlock(name, email);
+  // Load Gemini key from Firestore for this user
+  db.collection('users').doc(uid).get().then(doc => {
+    if (doc.exists && doc.data().geminiKey) {
+      _gemini.key = doc.data().geminiKey;
+    }
+    initGeminiUI();
+  }).catch(() => initGeminiUI());
   testCheckDoneCards();
   const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
   document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
@@ -3877,7 +3894,7 @@ async function generateLessonPlan() {
 
   const topic = document.getElementById('lp-topic').value.trim();
   const level = document.getElementById('lp-level').value;
-  const key   = localStorage.getItem('gemini_key');
+  const key   = _gemini.key;
   const btn   = document.getElementById('lp-btn');
 
   if (!key) {
@@ -4125,16 +4142,14 @@ Respond ONLY with this exact JSON (no markdown, no extra text):
   'gemini-2.5-flash', 
   'gemini-2.5-flash-lite'
 ];
-  const cachedModel = localStorage.getItem('gemini_model');
-  const cachedListRaw = localStorage.getItem('gemini_models_list');
-  const cachedListTime = parseInt(localStorage.getItem('gemini_models_ts') || '0');
-  const listFresh = cachedListRaw && (Date.now() - cachedListTime < 3600000);
+  const cachedModel = _gemini.model;
+  const listFresh = _gemini.modelsList && (Date.now() - _gemini.modelsTs < 3600000);
 
   let modelList = [];
   if (cachedModel) {
     modelList = [cachedModel, ...fallback.filter(m => m !== cachedModel)];
   } else if (listFresh) {
-    modelList = JSON.parse(cachedListRaw).filter(m => fallback.includes(m));
+    modelList = _gemini.modelsList.filter(m => fallback.includes(m));
   } else {
     try {
       const lRes = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`, {}, 8000);
@@ -4145,8 +4160,8 @@ Respond ONLY with this exact JSON (no markdown, no extra text):
           .map(m => m.name.replace('models/', ''));
         const discovered = fallback.filter(m => apiNames.includes(m));
         modelList = discovered.length ? discovered : fallback;
-        localStorage.setItem('gemini_models_list', JSON.stringify(modelList));
-        localStorage.setItem('gemini_models_ts', Date.now().toString());
+        _gemini.modelsList = modelList;
+        _gemini.modelsTs = Date.now();
       }
     } catch(e) {}
     if (!modelList.length) modelList = fallback;
@@ -4165,7 +4180,7 @@ Respond ONLY with this exact JSON (no markdown, no extra text):
         lastError = err?.error?.message || `HTTP ${res.status}`;
         trackApiCall(model, false, lastError);
         if (!lastError.includes('quota') && !lastError.includes('RESOURCE_EXHAUSTED') && !lastError.includes('exceeded')) {
-          localStorage.removeItem('gemini_model');
+          _gemini.model = null;
         }
         continue;
       }
@@ -4189,7 +4204,7 @@ Respond ONLY with this exact JSON (no markdown, no extra text):
       console.log('[MARK LP] model:', model, 'plan keys:', Object.keys(plan));
 
       trackApiCall(model, true, '');
-      localStorage.setItem('gemini_model', model);
+      _gemini.model = model;
       btn.innerHTML = '✨ Generate Lesson Plan';
       btn.disabled = false;
       try {
@@ -4311,7 +4326,7 @@ function renderLeadin(leadin) {
 }
 
 async function regenerateLeadin(triggerType) {
-  const key = localStorage.getItem('gemini_key');
+  const key = _gemini.key;
   if (!key) return;
 
   const topic = document.getElementById('lp-topic').value.trim();
@@ -4354,15 +4369,14 @@ Respond ONLY with this JSON:
     return fetch(url, { ...opts, signal: ctrl.signal }).finally(() => clearTimeout(t));
   };
 
-  const cachedModel = localStorage.getItem('gemini_model');
-  const cachedList = localStorage.getItem('gemini_models_list');
+  const cachedModel = _gemini.model;
   const fallback = [
-  'gemini-3.1-flash-lite', 
-  'gemini-3-flash', 
-  'gemini-2.5-flash', 
+  'gemini-3.1-flash-lite',
+  'gemini-3-flash',
+  'gemini-2.5-flash',
   'gemini-2.5-flash-lite'
 ];
-  const baseList = cachedList ? JSON.parse(cachedList).filter(m => fallback.includes(m)) : fallback;
+  const baseList = _gemini.modelsList ? _gemini.modelsList.filter(m => fallback.includes(m)) : fallback;
   const modelList = cachedModel && fallback.includes(cachedModel) ? [cachedModel, ...baseList.filter(m=>m!==cachedModel)] : baseList;
 
   for (const model of modelList) {
@@ -4376,10 +4390,10 @@ Respond ONLY with this JSON:
         const err = await res.json().catch(() => ({}));
         const msg = err?.error?.message || '';
         trackApiCall(model, false, msg);
-        localStorage.removeItem('gemini_model');
+        _gemini.model = null;
         if (msg.includes('Interactions API') || msg.includes('only supports')) {
-          localStorage.removeItem('gemini_models_list');
-          localStorage.removeItem('gemini_models_ts');
+          _gemini.modelsList = null;
+          _gemini.modelsTs = 0;
         }
         continue;
       }
@@ -4389,7 +4403,7 @@ Respond ONLY with this JSON:
       if (!match) continue;
       const leadin = JSON.parse(match[0]);
       trackApiCall(model, true, '');
-      localStorage.setItem('gemini_model', model);
+      _gemini.model = model;
       renderLeadin(leadin);
       return;
     } catch(e) { continue; }

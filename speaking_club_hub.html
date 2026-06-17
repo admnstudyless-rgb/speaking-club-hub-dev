@@ -735,7 +735,10 @@
     </button>
     <span class="topbar-title" id="topbar-title">Speaking Club Hub</span>
     <button class="profile-topbar-btn" id="topbar-profile-btn" onclick="openProfile()">
-      <div class="profile-avatar-sm" id="topbar-avatar">?</div>
+      <div style="position:relative;flex-shrink:0;">
+        <div class="profile-avatar-sm" id="topbar-avatar">?</div>
+        <div id="topbar-notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;background:#EF4444;border-radius:8px;border:2px solid white;font-size:9px;font-weight:800;color:white;display:none;align-items:center;justify-content:center;padding:0 3px;box-sizing:border-box;"></div>
+      </div>
       <span style="font-size:13px;font-weight:600;" id="topbar-profile-label">Sign in</span>
     </button>
   </header>
@@ -2390,8 +2393,19 @@
           <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Admin view — all results</div>
           <div id="test-admin-list"></div>
         </div>
-        <div id="test-admin-btn-wrap" style="display:none;margin-top:24px;text-align:center;">
-          <button onclick="testShowAdmin()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">View all results (admin)</button>
+        <div id="test-admin-btn-wrap" style="display:none;margin-top:24px;">
+          <div style="text-align:center;margin-bottom:12px;">
+            <button onclick="testShowAdmin()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">View all results (admin)</button>
+          </div>
+          <div style="background:#F8FAFF;border:1.5px solid #E0E7FF;border-radius:12px;padding:14px 16px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6B7280;margin-bottom:10px;">Send notification to all teachers</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <input type="text" id="admin-notif-text" placeholder="e.g. New test: Grammar Deep Dive is now available"
+                style="flex:1;padding:9px 12px;border:1.5px solid #C7D2FE;border-radius:9px;font-size:13px;font-family:inherit;outline:none;">
+              <button onclick="adminSendAnnouncement()" style="background:#6366F1;color:white;border:none;border-radius:9px;font-size:13px;font-weight:700;padding:9px 14px;cursor:pointer;font-family:inherit;white-space:nowrap;" id="admin-notif-btn">Send</button>
+            </div>
+            <div id="admin-notif-status" style="font-size:12px;color:#059669;display:none;"></div>
+          </div>
         </div>
       </div>
 
@@ -3726,12 +3740,25 @@ function saveAdminReview(docId, openIdx, btnEl) {
     const existingReviews = data.reviews || {};
     existingReviews[`open_${openIdx}`] = { comment, score };
     const reviewedCount = Object.keys(existingReviews).length;
+    let notifPayload = null;
     if (reviewedCount >= openCount) {
       const avg = Object.values(existingReviews).reduce((s, r) => s + r.score, 0) / reviewedCount;
       update.reviewed = true;
       update.averageOpenScore = Math.round(avg * 10) / 10;
+      notifPayload = {
+        type: 'review_done',
+        title: 'Your answers have been reviewed',
+        text: `Admin reviewed your open question answers for Test 1. Average score: ${Math.round(avg * 10) / 10}/10`,
+        ts: new Date().toISOString(),
+        read: false
+      };
     }
-    return db.collection('test_results').doc(docId).update(update);
+    return db.collection('test_results').doc(docId).update(update).then(() => {
+      if (notifPayload && data.email) {
+        const key = _emailKey(data.email);
+        db.collection('user_notifications').doc(key).collection('items').add(notifPayload).catch(() => {});
+      }
+    });
   }).then(() => {
     const wrap = btnEl.closest('.rev-form');
     wrap.innerHTML = `<span style="color:#059669;font-size:13px;font-weight:600;">✓ Saved · Score: ${score}/10</span>${comment ? `<div style="font-size:12px;color:#6B7280;margin-top:4px;">${comment}</div>` : ''}`;
@@ -3830,6 +3857,7 @@ function openProfile() {
   document.getElementById('profile-overlay').classList.add('open');
   document.getElementById('profile-drawer').classList.add('open');
   _updateProfileDrawer();
+  _markAllNotificationsRead();
 }
 
 function closeProfile() {
@@ -3939,19 +3967,150 @@ function profileSignOut() {
 }
 
 // ── End Profile Drawer ────────────────────────────────────────
+
+// ── Notifications ─────────────────────────────────────────────
+function _emailKey(email) {
+  return email.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+}
+
+async function _loadNotifications() {
+  if (!_teacher) return;
+  const emailKey = _emailKey(_teacher.email);
+
+  // Load personal notifications
+  const personalSnap = await db.collection('user_notifications').doc(emailKey)
+    .collection('items').orderBy('ts', 'desc').limit(30).get().catch(() => null);
+
+  const personal = personalSnap ? personalSnap.docs.map(d => ({ id: d.id, ...d.data(), _src: 'personal' })) : [];
+
+  // Load global announcements
+  const announceSnap = await db.collection('announcements').orderBy('ts', 'desc').limit(20).get().catch(() => null);
+  const seenIds = _teacher._seenAnnouncements || [];
+  const global = announceSnap ? announceSnap.docs.map(d => ({
+    id: d.id, ...d.data(),
+    read: seenIds.includes(d.id),
+    _src: 'global'
+  })) : [];
+
+  // Merge and sort by ts desc
+  const all = [...personal, ...global].sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+  _teacher._notifications = all;
+
+  const unread = all.filter(n => !n.read).length;
+  _updateNotifBadge(unread);
+  _renderNotifications(all);
+}
+
+function _renderNotifications(notifs) {
+  const list = document.getElementById('profile-notif-list');
+  if (!list) return;
+  if (!notifs || notifs.length === 0) {
+    list.innerHTML = '<div style="font-size:13px;color:#9CA3AF;text-align:center;padding:6px 0;">No notifications yet</div>';
+    return;
+  }
+  list.innerHTML = notifs.map(n => {
+    const isUnread = !n.read;
+    const icon = n.type === 'review_done' ? '✅' : n.type === 'new_test' ? '🆕' : '🔔';
+    const date = n.ts ? new Date(n.ts).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }) : '';
+    return `<div style="display:flex;gap:10px;padding:10px;border-radius:10px;background:${isUnread ? '#F0F9FF' : '#F9FAFB'};border:1.5px solid ${isUnread ? '#BAE6FD' : '#F3F4F6'};">
+      <div style="font-size:18px;flex-shrink:0;margin-top:1px;">${icon}</div>
+      <div style="min-width:0;flex:1;">
+        <div style="font-size:13px;font-weight:${isUnread ? '700' : '600'};color:#111827;line-height:1.4;margin-bottom:2px;">${n.title || ''}</div>
+        ${n.text ? `<div style="font-size:12px;color:#6B7280;line-height:1.5;">${n.text}</div>` : ''}
+        ${date ? `<div style="font-size:11px;color:#9CA3AF;margin-top:4px;">${date}</div>` : ''}
+      </div>
+      ${isUnread ? '<div style="width:7px;height:7px;border-radius:50%;background:#3B82F6;flex-shrink:0;margin-top:5px;"></div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function _updateNotifBadge(count) {
+  const badge = document.getElementById('topbar-notif-badge');
+  const countBadge = document.getElementById('profile-notif-count-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'flex';
+    if (countBadge) { countBadge.textContent = count; countBadge.style.display = 'inline-block'; }
+  } else {
+    badge.style.display = 'none';
+    if (countBadge) countBadge.style.display = 'none';
+  }
+}
+
+async function _markAllNotificationsRead() {
+  if (!_teacher || !_teacher._notifications) return;
+  const unread = _teacher._notifications.filter(n => !n.read);
+  if (unread.length === 0) return;
+
+  const emailKey = _emailKey(_teacher.email);
+  const batch = db.batch();
+
+  const newSeenIds = [...(_teacher._seenAnnouncements || [])];
+  unread.forEach(n => {
+    if (n._src === 'personal') {
+      const ref = db.collection('user_notifications').doc(emailKey).collection('items').doc(n.id);
+      batch.update(ref, { read: true });
+    } else if (n._src === 'global') {
+      if (!newSeenIds.includes(n.id)) newSeenIds.push(n.id);
+    }
+    n.read = true;
+  });
+
+  batch.commit().catch(() => {});
+
+  if (newSeenIds.length !== (_teacher._seenAnnouncements || []).length) {
+    _teacher._seenAnnouncements = newSeenIds;
+    db.collection('users').doc(_teacher.uid).update({ seenAnnouncements: newSeenIds }).catch(() => {});
+  }
+
+  _updateNotifBadge(0);
+  _renderNotifications(_teacher._notifications);
+}
+
+async function adminSendAnnouncement() {
+  const text = document.getElementById('admin-notif-text').value.trim();
+  if (!text) return;
+  const btn = document.getElementById('admin-notif-btn');
+  const status = document.getElementById('admin-notif-status');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    await db.collection('announcements').add({
+      type: 'new_test',
+      title: 'Announcement',
+      text,
+      ts: new Date().toISOString(),
+    });
+    document.getElementById('admin-notif-text').value = '';
+    status.textContent = '✓ Notification sent to all teachers';
+    status.style.display = 'block';
+    setTimeout(() => { status.style.display = 'none'; }, 4000);
+  } catch (e) {
+    status.textContent = 'Error: ' + e.message;
+    status.style.color = '#EF4444';
+    status.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Send';
+}
+// ── End Notifications ──────────────────────────────────────────
 function _onAuthReady() {
   const { name, email, uid } = _teacher;
   _renderUserBlock(name, email);
   _updateTopbarProfile();
   _updateProfileDrawer();
-  // Load Gemini key from Firestore for this user
+  // Load user data from Firestore (Gemini key, seen announcements)
   db.collection('users').doc(uid).get().then(doc => {
-    if (doc.exists && doc.data().geminiKey) {
-      _gemini.key = doc.data().geminiKey;
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.geminiKey) _gemini.key = data.geminiKey;
+      if (data.seenAnnouncements) _teacher._seenAnnouncements = data.seenAnnouncements;
     }
     initGeminiUI();
     _updateProfileDrawer();
-  }).catch(() => initGeminiUI());
+    _loadNotifications();
+  }).catch(() => { initGeminiUI(); _loadNotifications(); });
   testCheckDoneCards();
   const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
   document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
@@ -4723,6 +4882,17 @@ function printLessonPlan() {
         <div style="min-width:0;">
           <div id="profile-display-name" style="font-size:16px;font-weight:800;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
           <div id="profile-display-email" style="font-size:12px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="profile-section" id="profile-notif-section">
+        <div class="profile-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Notifications</span>
+          <span id="profile-notif-count-badge" style="display:none;background:#EF4444;color:white;border-radius:10px;font-size:10px;font-weight:800;padding:2px 7px;"></span>
+        </div>
+        <div id="profile-notif-list" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:13px;color:#9CA3AF;text-align:center;padding:6px 0;">No notifications yet</div>
         </div>
       </div>
 

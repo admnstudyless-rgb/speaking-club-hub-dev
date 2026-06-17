@@ -4717,33 +4717,11 @@ function renderLeadin(leadin) {
   if (isImage) {
     const lessonTopic = document.getElementById('lp-topic')?.value?.trim() || '';
     const pexelsQuery = leadin.pexels_search || lessonTopic || (leadin.trigger || 'english lesson').split(' ').slice(0,3).join(' ');
-    const q = encodeURIComponent(pexelsQuery);
+    window._lessonStockQuery = pexelsQuery;
     mediaHtml = `
-      <div style="margin:10px 0 14px;border-radius:10px;border:1.5px solid #E0E7FF;background:#F5F3FF;padding:14px 16px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-          <div style="width:38px;height:38px;background:#8B5CF6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🖼️</div>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:#1F2937;">Find an image for the lesson</div>
-            <div style="font-size:11px;color:#6B7280;">Open a stock site, pick any photo, show it on screen</div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:#6B7280;margin-bottom:6px;">Suggested search keywords:</div>
-        <div style="font-size:13px;font-weight:700;color:#4C1D95;background:white;border-radius:8px;padding:8px 12px;border:1px solid #DDD6FE;margin-bottom:12px;">🔍 ${pexelsQuery}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          <a href="https://pixabay.com/images/search/${q}/" target="_blank"
-            style="display:inline-flex;align-items:center;gap:6px;background:#2EC27E;color:white;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
-            Pixabay →
-          </a>
-          <a href="https://unsplash.com/s/photos/${q}" target="_blank"
-            style="display:inline-flex;align-items:center;gap:6px;background:#111827;color:white;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
-            Unsplash →
-          </a>
-          <a href="https://www.pexels.com/search/${q}/" target="_blank"
-            style="display:inline-flex;align-items:center;gap:6px;background:#05A081;color:white;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
-            Pexels →
-          </a>
-        </div>
-        <div style="margin-top:8px;font-size:11px;color:#9CA3AF;">All sites are free for educational use · No registration needed to browse</div>
+      <div style="margin:8px 0 4px;padding:10px 14px;border-radius:8px;background:#F0FDF4;border:1px solid #BBF7D0;font-size:12px;color:#374151;">
+        💡 <strong>AI image:</strong> paste the prompt above into any AI generator you use —
+        <span style="color:#6B7280;">Midjourney, DALL-E, Adobe Firefly, Leonardo AI, Ideogram</span>
       </div>`;
   } else if (isVideo) {
     const topic = document.getElementById('lp-topic')?.value?.trim() || '';
@@ -4766,6 +4744,32 @@ function renderLeadin(leadin) {
       </div>`;
   }
 
+  const stockHtml = isImage ? (() => {
+    const q = encodeURIComponent(window._lessonStockQuery || 'english lesson');
+    const kw = window._lessonStockQuery || 'english lesson';
+    return `
+      <div style="margin-top:16px;border-radius:10px;border:1.5px solid #E0E7FF;background:#F5F3FF;padding:14px 16px;">
+        <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:4px;">🖼️ Find a ready-made photo on a free stock site</div>
+        <div style="font-size:11px;color:#6B7280;margin-bottom:10px;">No registration needed to browse · Free for educational use</div>
+        <div style="font-size:11px;color:#6B7280;margin-bottom:6px;">Search keywords:</div>
+        <div style="font-size:13px;font-weight:700;color:#4C1D95;background:white;border-radius:8px;padding:8px 12px;border:1px solid #DDD6FE;margin-bottom:12px;">🔍 ${kw}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <a href="https://pixabay.com/images/search/${q}/" target="_blank"
+            style="display:inline-flex;align-items:center;gap:5px;background:#2EC27E;color:white;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">Pixabay →</a>
+          <a href="https://unsplash.com/s/photos/${q}" target="_blank"
+            style="display:inline-flex;align-items:center;gap:5px;background:#111827;color:white;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">Unsplash →</a>
+          <a href="https://www.pexels.com/search/${q}/" target="_blank"
+            style="display:inline-flex;align-items:center;gap:5px;background:#05A081;color:white;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">Pexels →</a>
+          <a href="https://www.freepik.com/search?format=search&query=${q}&type=photo" target="_blank"
+            style="display:inline-flex;align-items:center;gap:5px;background:#FF5F00;color:white;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">Freepik →</a>
+          <a href="https://stocksnap.io/search/${q}" target="_blank"
+            style="display:inline-flex;align-items:center;gap:5px;background:#3B82F6;color:white;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">StockSnap →</a>
+          <a href="https://www.flickr.com/search/?text=${q}&license=4%2C5%2C9%2C10" target="_blank"
+            style="display:inline-flex;align-items:center;gap:5px;background:#FF0084;color:white;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">Flickr CC →</a>
+        </div>
+      </div>`;
+  })() : '';
+
   document.getElementById('lps-leadin-body').innerHTML = `
     <div style="margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;color:#6B7280;margin-bottom:7px;">Try a different trigger type:</div>
@@ -4778,6 +4782,7 @@ function renderLeadin(leadin) {
       <div style="margin-top:12px;margin-bottom:6px;font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.4px;">Questions for students:</div>
       ${(leadin.questions||[]).map((q,i) => `<div style="font-size:13px;padding:6px 0 6px 12px;border-left:2px solid #D1FAE5;margin-bottom:6px;color:#374151;"><span style="color:#10B981;font-weight:700;">${i+1}.</span> ${q}</div>`).join('')}
       ${leadin.note ? `<div class="lp-note">💡 ${leadin.note}</div>` : ''}
+      ${stockHtml}
     </div>`;
 
 }

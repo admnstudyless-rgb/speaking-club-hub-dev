@@ -4149,10 +4149,11 @@ function _onAuthReady() {
 
 function testInitModule() {
   if (_teacher) {
-    // Already authenticated this session — just re-render
     _renderUserBlock(_teacher.name, _teacher.email);
     const isAdmin = _teacher.email.toLowerCase() === 'admnstudyless@gmail.com';
     document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
+    testCheckDoneCards();
+    if (!isAdmin) testCheckReview();
     testShowScreen('test-screen-list');
     return;
   }

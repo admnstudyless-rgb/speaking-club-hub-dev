@@ -4148,9 +4148,32 @@ function testInitModule() {
 }
 
 // Init on load
+function _initGlobalAuth() {
+  const unsub = auth.onAuthStateChanged(user => {
+    unsub();
+    if (!user || !user.email) return;
+    // Set teacher from Auth immediately (no Firestore wait)
+    if (!_teacher) {
+      _teacher = { name: user.email.split('@')[0], email: user.email, uid: user.uid };
+    }
+    _updateTopbarProfile();
+    // Enrich with Firestore data
+    db.collection('users').doc(user.uid).get().then(doc => {
+      const data = doc.exists ? doc.data() : {};
+      if (data.name) _teacher.name = data.name;
+      if (data.geminiKey) _gemini.key = data.geminiKey;
+      if (data.seenAnnouncements) _teacher._seenAnnouncements = data.seenAnnouncements;
+      _updateTopbarProfile();
+      initGeminiUI();
+      _loadNotifications();
+    }).catch(() => {});
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initGeminiUI();
   _completeEmailSignIn();
+  _initGlobalAuth();
 });
 
 // ── Lesson Plan Generator ─────────────────────────────────────

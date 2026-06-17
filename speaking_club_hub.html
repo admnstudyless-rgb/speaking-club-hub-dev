@@ -4639,6 +4639,8 @@ function renderLeadin(leadin) {
   let mediaHtml = '';
   if (isImage) {
     const rawPrompt = leadin.image_prompt || leadin.trigger || 'speaking english lesson';
+    const lessonTopic = document.getElementById('lp-topic')?.value?.trim() || '';
+    window._lessonImageData = { pexelsQuery: lessonTopic || rawPrompt.split(' ').slice(0,4).join(' '), lexicaPrompt: rawPrompt };
     mediaHtml = `
       <div style="margin:10px 0 14px;border-radius:10px;overflow:hidden;background:#F3F4F6;border:1px solid #E5E7EB;">
         <div style="position:relative;min-height:220px;">
@@ -4648,7 +4650,7 @@ function renderLeadin(leadin) {
           </div>
           <img id="leadin-img" alt="Image for lesson"
             style="width:100%;display:block;max-height:360px;object-fit:cover;opacity:0;transition:opacity .4s;" />
-          <button onclick="_reloadLessonImage(${JSON.stringify(rawPrompt).replace(/"/g,'&quot;')})"
+          <button onclick="_reloadLessonImage()"
             style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">
             🔄 New image
           </button>
@@ -4691,12 +4693,12 @@ function renderLeadin(leadin) {
     </div>`;
 
   if (isImage) {
-    const rawPrompt = leadin.image_prompt || leadin.trigger || 'speaking english lesson';
-    _loadLessonImage(rawPrompt);
+    const d = window._lessonImageData || {};
+    _loadLessonImage(d.pexelsQuery || 'english lesson', d.lexicaPrompt || 'english lesson');
   }
 }
 
-async function _loadLessonImage(prompt) {
+async function _loadLessonImage(pexelsQuery, lexicaPrompt) {
   const img = document.getElementById('leadin-img');
   const loader = document.getElementById('leadin-img-loader');
   const source = document.getElementById('leadin-img-source');
@@ -4710,26 +4712,26 @@ async function _loadLessonImage(prompt) {
     let url = null, sourceName = '';
 
     if (_pexelsKey) {
-      const q = encodeURIComponent(prompt);
-      const resp = await fetch(`https://api.pexels.com/v1/search?query=${q}&per_page=10&orientation=landscape`, {
+      const q = encodeURIComponent(pexelsQuery);
+      const resp = await fetch(`https://api.pexels.com/v1/search?query=${q}&per_page=15&orientation=landscape`, {
         headers: { Authorization: _pexelsKey }
       });
       const data = await resp.json();
       if (data.photos && data.photos.length > 0) {
-        const pick = data.photos[Math.floor(Math.random() * Math.min(data.photos.length, 8))];
+        const pick = data.photos[Math.floor(Math.random() * Math.min(data.photos.length, 10))];
         url = pick.src.large;
         sourceName = `📷 Photo by <a href="${pick.photographer_url}" target="_blank" style="color:#6B7280;">${pick.photographer}</a> · Pexels`;
       }
     }
 
     if (!url) {
-      const q = encodeURIComponent(prompt);
+      const q = encodeURIComponent(lexicaPrompt || pexelsQuery);
       const resp = await fetch(`https://lexica.art/api/v1/search?q=${q}`);
       const data = await resp.json();
       if (data.images && data.images.length > 0) {
         const pick = data.images[Math.floor(Math.random() * Math.min(data.images.length, 8))];
         url = pick.src;
-        sourceName = '🤖 AI-generated image · Lexica.art (Stable Diffusion)';
+        sourceName = '🤖 AI-generated image · Lexica.art';
       }
     }
 
@@ -4746,8 +4748,9 @@ async function _loadLessonImage(prompt) {
   }
 }
 
-function _reloadLessonImage(prompt) {
-  _loadLessonImage(prompt);
+function _reloadLessonImage() {
+  const d = window._lessonImageData || {};
+  _loadLessonImage(d.pexelsQuery || 'english lesson', d.lexicaPrompt);
 }
 
 async function regenerateLeadin(triggerType) {

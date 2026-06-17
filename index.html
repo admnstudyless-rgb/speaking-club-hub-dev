@@ -4460,7 +4460,9 @@ Respond ONLY with this exact JSON (no markdown, no extra text):
     "trigger_type": "Image / Visual OR Quote / Statement OR Surprising Fact OR Video Clip OR Scenario",
     "trigger": "specific ready-to-use trigger content",
     "questions": ["simple question 1", "question 2", "deeper question 3"],
-    "note": "teacher tip"
+    "note": "teacher tip",
+    "image_prompt": "only if Image / Visual: concrete visual scene, 10-15 words, real-photo style (NOT AI art)",
+    "pexels_search": "only if Image / Visual: 2-3 English keywords for real photo search e.g. 'summer beach family'"
   },
   "vocabulary": {
     "words": [
@@ -4640,7 +4642,8 @@ function renderLeadin(leadin) {
   if (isImage) {
     const rawPrompt = leadin.image_prompt || leadin.trigger || 'speaking english lesson';
     const lessonTopic = document.getElementById('lp-topic')?.value?.trim() || '';
-    window._lessonImageData = { pexelsQuery: lessonTopic || rawPrompt.split(' ').slice(0,4).join(' '), lexicaPrompt: rawPrompt };
+    const pexelsQuery = leadin.pexels_search || lessonTopic || rawPrompt.split(' ').slice(0,3).join(' ');
+    window._lessonImageData = { pexelsQuery, lexicaPrompt: rawPrompt };
     mediaHtml = `
       <div style="margin:10px 0 14px;border-radius:10px;overflow:hidden;background:#F3F4F6;border:1px solid #E5E7EB;">
         <div style="position:relative;min-height:220px;">
@@ -4772,7 +4775,7 @@ async function regenerateLeadin(triggerType) {
   content.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:16px;color:#6B7280;font-size:13px;"><span class="spinner"></span> Generating ${triggerType}…</div>`;
 
   const extraImageField = triggerType === 'Image / Visual'
-    ? `,"image_prompt":"a detailed visual description for AI image generation, 10-20 words, photorealistic style"`
+    ? `,"image_prompt":"concrete visual scene description, 10-15 words, real-photo style","pexels_search":"2-3 English keywords for photo search e.g. 'summer beach family'"`
     : '';
   const extraVideoField = triggerType === 'Video Clip'
     ? `,"video_search":"a specific YouTube search query to find a relevant 30-90 sec video clip"`

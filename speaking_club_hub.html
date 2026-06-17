@@ -1489,8 +1489,15 @@
           ✨ Generate Lesson Plan
         </button>
 
-        <div id="lp-no-key" style="display:none;margin-top:16px;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:14px;font-size:13px;color:#92400E;">
-          ⚠️ Gemini API key required. Go to <strong>Live Triggers</strong> section and connect your key first.
+        <div id="lp-no-auth" style="display:none;margin-top:16px;background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:10px;">🔐</div>
+          <div style="font-size:15px;font-weight:800;color:#111827;margin-bottom:6px;">Sign in to use AI Lesson Planner</div>
+          <div style="font-size:13px;color:#6B7280;line-height:1.6;margin-bottom:16px;">Sign in with your work email to generate lesson plans and save your Gemini API key.</div>
+          <button class="btn btn-primary" style="padding:10px 24px;" onclick="openProfile()">Sign in →</button>
+        </div>
+
+        <div id="lp-no-key" style="display:none;margin-top:16px;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:16px;font-size:13px;color:#92400E;">
+          ⚠️ Gemini API key required. <button onclick="openProfile()" style="background:none;border:none;color:#6366F1;font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit;">Open profile →</button> and connect your key in AI Settings.
         </div>
 
         <div id="lp-result" style="display:none;margin-top:28px;">
@@ -3997,11 +4004,17 @@ async function generateLessonPlan() {
   const key   = _gemini.key;
   const btn   = document.getElementById('lp-btn');
 
+  document.getElementById('lp-no-auth').style.display = 'none';
+  document.getElementById('lp-no-key').style.display = 'none';
+
+  if (!_teacher) {
+    document.getElementById('lp-no-auth').style.display = 'block';
+    return;
+  }
   if (!key) {
     document.getElementById('lp-no-key').style.display = 'block';
     return;
   }
-  document.getElementById('lp-no-key').style.display = 'none';
 
   btn.innerHTML = '<span class="spinner"></span>Generating lesson plan…';
   btn.disabled = true;

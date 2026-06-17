@@ -2511,6 +2511,7 @@ const auth = firebase.auth();
 let _teacher = null;      // { name, email, uid } — set after Firebase Auth
 let _reviewCache = null;  // in-memory review data cache
 let _notifUnsubs = [];    // Firestore real-time notification listeners
+let _pexelsKey = null;    // Pexels API key for lesson images
 
 // ── Gemini state (replaces localStorage for AI settings) ──────
 const _gemini = {
@@ -2948,6 +2949,50 @@ function removeGeminiKey() {
       .catch(e => console.error('Failed to remove key:', e));
   }
   initGeminiUI();
+}
+
+function initPexelsUI() {
+  const setup = document.getElementById('pexels-setup');
+  const status = document.getElementById('pexels-status');
+  if (!setup || !status) return;
+  if (_pexelsKey) {
+    setup.style.display = 'none';
+    status.style.display = 'flex';
+  } else {
+    setup.style.display = 'block';
+    status.style.display = 'none';
+  }
+}
+
+function savePexelsKey() {
+  const key = document.getElementById('pexels-key-input').value.trim();
+  if (!key) return;
+  const btn = document.getElementById('pexels-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  _pexelsKey = key;
+  if (_teacher) {
+    db.collection('users').doc(_teacher.uid)
+      .set({ pexelsKey: key }, { merge: true })
+      .then(() => { initPexelsUI(); })
+      .catch(e => {
+        _pexelsKey = null;
+        btn.disabled = false; btn.textContent = 'Save';
+        console.error('Failed to save Pexels key:', e);
+      });
+  } else {
+    initPexelsUI();
+  }
+}
+
+function removePexelsKey() {
+  _pexelsKey = null;
+  if (_teacher) {
+    db.collection('users').doc(_teacher.uid)
+      .set({ pexelsKey: firebase.firestore.FieldValue.delete() }, { merge: true })
+      .catch(e => console.error('Failed to remove Pexels key:', e));
+  }
+  document.getElementById('pexels-key-input').value = '';
+  initPexelsUI();
 }
 
 function resetGeminiModel() {
@@ -4129,14 +4174,16 @@ function _onAuthReady() {
   _renderUserBlock(name, email);
   _updateTopbarProfile();
   _updateProfileDrawer();
-  // Load user data from Firestore (Gemini key, seen announcements)
+  // Load user data from Firestore (Gemini key, Pexels key, seen announcements)
   db.collection('users').doc(uid).get().then(doc => {
     if (doc.exists) {
       const data = doc.data();
       if (data.geminiKey) _gemini.key = data.geminiKey;
+      if (data.pexelsKey) _pexelsKey = data.pexelsKey;
       if (data.seenAnnouncements) _teacher._seenAnnouncements = data.seenAnnouncements;
     }
     initGeminiUI();
+    initPexelsUI();
     _updateProfileDrawer();
     _loadNotifications();
   }).catch(() => { initGeminiUI(); _loadNotifications(); });
@@ -4192,9 +4239,11 @@ function _initGlobalAuth() {
       const data = doc.exists ? doc.data() : {};
       if (data.name) _teacher.name = data.name;
       if (data.geminiKey) _gemini.key = data.geminiKey;
+      if (data.pexelsKey) _pexelsKey = data.pexelsKey;
       if (data.seenAnnouncements) _teacher._seenAnnouncements = data.seenAnnouncements;
       _updateTopbarProfile();
       initGeminiUI();
+      initPexelsUI();
       _loadNotifications();
     }).catch(() => {});
   });
@@ -4590,29 +4639,21 @@ function renderLeadin(leadin) {
   let mediaHtml = '';
   if (isImage) {
     const rawPrompt = leadin.image_prompt || leadin.trigger || 'speaking english lesson';
-    const pollinationsPrompt = encodeURIComponent(`${rawPrompt}, professional photo, warm lighting, high quality`);
-    const seed = Math.floor(Math.random() * 99999);
-    const imgUrl = () => `https://image.pollinations.ai/prompt/${pollinationsPrompt}?width=600&height=400&seed=${Math.floor(Math.random()*99999)}&nologo=true`;
     mediaHtml = `
       <div style="margin:10px 0 14px;border-radius:10px;overflow:hidden;background:#F3F4F6;border:1px solid #E5E7EB;">
-        <div style="position:relative;min-height:200px;">
+        <div style="position:relative;min-height:220px;">
           <div id="leadin-img-loader" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#9CA3AF;font-size:13px;background:#F9FAFB;">
             <div style="width:28px;height:28px;border:3px solid #E5E7EB;border-top-color:#6366F1;border-radius:50%;animation:spin .8s linear infinite;"></div>
-            Generating image…
+            Loading image…
           </div>
-          <img id="leadin-img"
-            src="https://image.pollinations.ai/prompt/${pollinationsPrompt}?width=600&height=400&seed=${seed}&nologo=true"
-            alt="AI image for lesson"
-            style="width:100%;display:block;max-height:340px;object-fit:cover;opacity:0;transition:opacity .4s;"
-            onload="this.style.opacity='1';document.getElementById('leadin-img-loader').style.display='none';"
-            onerror="document.getElementById('leadin-img-loader').innerHTML='<div style=\\'padding:14px;color:#9CA3AF;font-size:12px;text-align:center;\\'>⚠️ Image could not generate. Try regenerating.</div>'"
-          />
-          <button onclick="(function(){const l=document.getElementById('leadin-img-loader');l.style.display='flex';l.innerHTML='<div style=\\'width:28px;height:28px;border:3px solid #E5E7EB;border-top-color:#6366F1;border-radius:50%;animation:spin .8s linear infinite;\\'></div>Generating…';const img=document.getElementById('leadin-img');img.style.opacity='0';img.src='https://image.pollinations.ai/prompt/${pollinationsPrompt}?width=600&height=400&seed='+Math.floor(Math.random()*99999)+'&nologo=true';})()"
+          <img id="leadin-img" alt="Image for lesson"
+            style="width:100%;display:block;max-height:360px;object-fit:cover;opacity:0;transition:opacity .4s;" />
+          <button onclick="_reloadLessonImage(${JSON.stringify(rawPrompt).replace(/"/g,'&quot;')})"
             style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">
             🔄 New image
           </button>
         </div>
-        <div style="padding:8px 12px;font-size:11px;color:#6B7280;background:#F9FAFB;">🤖 AI-generated image · Pollinations.ai</div>
+        <div id="leadin-img-source" style="padding:8px 12px;font-size:11px;color:#6B7280;background:#F9FAFB;"></div>
       </div>`;
   } else if (isVideo) {
     const topic = document.getElementById('lp-topic')?.value?.trim() || '';
@@ -4648,6 +4689,65 @@ function renderLeadin(leadin) {
       ${(leadin.questions||[]).map((q,i) => `<div style="font-size:13px;padding:6px 0 6px 12px;border-left:2px solid #D1FAE5;margin-bottom:6px;color:#374151;"><span style="color:#10B981;font-weight:700;">${i+1}.</span> ${q}</div>`).join('')}
       ${leadin.note ? `<div class="lp-note">💡 ${leadin.note}</div>` : ''}
     </div>`;
+
+  if (isImage) {
+    const rawPrompt = leadin.image_prompt || leadin.trigger || 'speaking english lesson';
+    _loadLessonImage(rawPrompt);
+  }
+}
+
+async function _loadLessonImage(prompt) {
+  const img = document.getElementById('leadin-img');
+  const loader = document.getElementById('leadin-img-loader');
+  const source = document.getElementById('leadin-img-source');
+  if (!img || !loader) return;
+
+  loader.style.display = 'flex';
+  loader.innerHTML = '<div style="width:28px;height:28px;border:3px solid #E5E7EB;border-top-color:#6366F1;border-radius:50%;animation:spin .8s linear infinite;"></div>Loading image…';
+  img.style.opacity = '0';
+
+  try {
+    let url = null, sourceName = '';
+
+    if (_pexelsKey) {
+      const q = encodeURIComponent(prompt);
+      const resp = await fetch(`https://api.pexels.com/v1/search?query=${q}&per_page=10&orientation=landscape`, {
+        headers: { Authorization: _pexelsKey }
+      });
+      const data = await resp.json();
+      if (data.photos && data.photos.length > 0) {
+        const pick = data.photos[Math.floor(Math.random() * Math.min(data.photos.length, 8))];
+        url = pick.src.large;
+        sourceName = `📷 Photo by <a href="${pick.photographer_url}" target="_blank" style="color:#6B7280;">${pick.photographer}</a> · Pexels`;
+      }
+    }
+
+    if (!url) {
+      const q = encodeURIComponent(prompt);
+      const resp = await fetch(`https://lexica.art/api/v1/search?q=${q}`);
+      const data = await resp.json();
+      if (data.images && data.images.length > 0) {
+        const pick = data.images[Math.floor(Math.random() * Math.min(data.images.length, 8))];
+        url = pick.src;
+        sourceName = '🤖 AI-generated image · Lexica.art (Stable Diffusion)';
+      }
+    }
+
+    if (url) {
+      img.onload = () => { img.style.opacity = '1'; loader.style.display = 'none'; };
+      img.onerror = () => { loader.innerHTML = '<div style="padding:14px;color:#9CA3AF;font-size:12px;text-align:center;">⚠️ Could not load image. Try again.</div>'; };
+      img.src = url;
+      if (source) source.innerHTML = sourceName;
+    } else {
+      loader.innerHTML = '<div style="padding:14px;color:#9CA3AF;font-size:12px;text-align:center;">⚠️ No image found. Try regenerating.</div>';
+    }
+  } catch(e) {
+    loader.innerHTML = '<div style="padding:14px;color:#9CA3AF;font-size:12px;text-align:center;">⚠️ Could not load image. Check your connection.</div>';
+  }
+}
+
+function _reloadLessonImage(prompt) {
+  _loadLessonImage(prompt);
 }
 
 async function regenerateLeadin(triggerType) {
@@ -4984,8 +5084,24 @@ function printLessonPlan() {
           </div>
         </div>
 
-        <div id="usage-display" style="background:#F8FAFF;border:1.5px solid #E0E7FF;border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+        <div id="usage-display" style="background:#F8FAFF;border:1.5px solid #E0E7FF;border-radius:10px;padding:10px 14px;margin-bottom:16px;">
           <span style="color:#6B7280;font-size:12px;">No requests today yet.</span>
+        </div>
+
+        <div style="border-top:1px solid #F3F4F6;padding-top:14px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:4px;">📷 Pexels — real photos for lessons</div>
+          <div style="font-size:11px;color:#6B7280;margin-bottom:10px;">Get a free key at <a href="https://www.pexels.com/api/" target="_blank" style="color:#6366F1;">pexels.com/api</a> — used in AI Lesson Planner images.</div>
+          <div id="pexels-setup">
+            <div style="display:flex;gap:8px;">
+              <input type="password" id="pexels-key-input" placeholder="Paste Pexels API key…"
+                style="flex:1;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
+              <button onclick="savePexelsKey()" style="background:#6366F1;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:9px 14px;cursor:pointer;font-family:inherit;white-space:nowrap;" id="pexels-save-btn">Save</button>
+            </div>
+          </div>
+          <div id="pexels-status" style="display:none;align-items:center;justify-content:space-between;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:8px;padding:9px 12px;">
+            <span style="font-size:13px;color:#059669;font-weight:700;">✓ Pexels connected</span>
+            <button onclick="removePexelsKey()" style="background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;padding:4px 10px;font-family:inherit;">Change</button>
+          </div>
         </div>
 
         <details style="font-size:12px;color:#6B7280;">

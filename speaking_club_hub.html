@@ -2512,6 +2512,7 @@ let _teacher = null;      // { name, email, uid } — set after Firebase Auth
 let _reviewCache = null;  // in-memory review data cache
 let _notifUnsubs = [];    // Firestore real-time notification listeners
 let _pexelsKey = null;    // Pexels API key for lesson images
+let _pixabayKey = null;   // Pixabay API key for lesson images
 let _hfToken = null;      // Hugging Face token for AI image generation
 
 // ── Gemini state (replaces localStorage for AI settings) ──────
@@ -3027,6 +3028,39 @@ function removePexelsKey() {
   }
   document.getElementById('pexels-key-input').value = '';
   initPexelsUI();
+}
+
+function initPixabayUI() {
+  const setup = document.getElementById('pixabay-setup');
+  const status = document.getElementById('pixabay-status');
+  if (!setup || !status) return;
+  if (_pixabayKey) { setup.style.display = 'none'; status.style.display = 'flex'; }
+  else { setup.style.display = 'block'; status.style.display = 'none'; }
+}
+
+function savePixabayKey() {
+  const key = document.getElementById('pixabay-key-input').value.trim();
+  if (!key) return;
+  const btn = document.getElementById('pixabay-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  _pixabayKey = key;
+  if (_teacher) {
+    db.collection('users').doc(_teacher.uid)
+      .set({ pixabayKey: key }, { merge: true })
+      .then(() => { initPixabayUI(); btn.disabled = false; btn.textContent = 'Save'; })
+      .catch(e => { _pixabayKey = null; btn.disabled = false; btn.textContent = 'Save'; console.error(e); });
+  } else { initPixabayUI(); }
+}
+
+function removePixabayKey() {
+  _pixabayKey = null;
+  if (_teacher) {
+    db.collection('users').doc(_teacher.uid)
+      .set({ pixabayKey: firebase.firestore.FieldValue.delete() }, { merge: true })
+      .catch(e => console.error(e));
+  }
+  document.getElementById('pixabay-key-input').value = '';
+  initPixabayUI();
 }
 
 function resetGeminiModel() {
@@ -4214,12 +4248,14 @@ function _onAuthReady() {
       const data = doc.data();
       if (data.geminiKey) _gemini.key = data.geminiKey;
       if (data.pexelsKey) _pexelsKey = data.pexelsKey;
+      if (data.pixabayKey) _pixabayKey = data.pixabayKey;
       if (data.hfToken) _hfToken = data.hfToken;
       if (data.seenAnnouncements) _teacher._seenAnnouncements = data.seenAnnouncements;
     }
     initGeminiUI();
     initHfUI();
     initPexelsUI();
+    initPixabayUI();
     _updateProfileDrawer();
     _loadNotifications();
   }).catch(() => { initGeminiUI(); _loadNotifications(); });
@@ -4276,11 +4312,13 @@ function _initGlobalAuth() {
       if (data.name) _teacher.name = data.name;
       if (data.geminiKey) _gemini.key = data.geminiKey;
       if (data.pexelsKey) _pexelsKey = data.pexelsKey;
+      if (data.pixabayKey) _pixabayKey = data.pixabayKey;
       if (data.hfToken) _hfToken = data.hfToken;
       if (data.seenAnnouncements) _teacher._seenAnnouncements = data.seenAnnouncements;
       _updateTopbarProfile();
       initGeminiUI();
       initPexelsUI();
+      initPixabayUI();
       _loadNotifications();
     }).catch(() => {});
   });
@@ -4768,7 +4806,21 @@ async function _loadLessonImage(pexelsQuery, lexicaPrompt) {
       } catch(e) {}
     }
 
-    // 2. Pexels — real photos
+    // 2. Pixabay — real photos, simple keyword search
+    if (!url && _pixabayKey) {
+      try {
+        const q = encodeURIComponent(pexelsQuery);
+        const resp = await fetch(`https://pixabay.com/api/?key=${_pixabayKey}&q=${q}&image_type=photo&orientation=horizontal&per_page=15&safesearch=true&lang=en`);
+        const data = await resp.json();
+        if (data.hits && data.hits.length > 0) {
+          const pick = data.hits[Math.floor(Math.random() * Math.min(data.hits.length, 10))];
+          url = pick.webformatURL;
+          sourceName = `📷 Photo by <a href="${pick.pageURL}" target="_blank" style="color:#6B7280;">${pick.user}</a> · Pixabay`;
+        }
+      } catch(e) {}
+    }
+
+    // 3. Pexels — real photos
     if (!url && _pexelsKey) {
       try {
         const q = encodeURIComponent(pexelsQuery);
@@ -5183,6 +5235,22 @@ function printLessonPlan() {
           <div id="hf-status" style="display:none;align-items:center;justify-content:space-between;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:8px;padding:9px 12px;">
             <span style="font-size:13px;color:#059669;font-weight:700;">✓ Hugging Face connected</span>
             <button onclick="removeHfToken()" style="background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;padding:4px 10px;font-family:inherit;">Change</button>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid #F3F4F6;padding-top:14px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:4px;">🖼️ Pixabay — free photos for lessons</div>
+          <div style="font-size:11px;color:#6B7280;margin-bottom:10px;">Free key at <a href="https://pixabay.com/api/docs/" target="_blank" style="color:#6366F1;">pixabay.com/api/docs</a> — register, then copy key from the top of that page.</div>
+          <div id="pixabay-setup">
+            <div style="display:flex;gap:8px;">
+              <input type="password" id="pixabay-key-input" placeholder="Paste Pixabay API key…"
+                style="flex:1;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
+              <button onclick="savePixabayKey()" style="background:#6366F1;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:9px 14px;cursor:pointer;font-family:inherit;white-space:nowrap;" id="pixabay-save-btn">Save</button>
+            </div>
+          </div>
+          <div id="pixabay-status" style="display:none;align-items:center;justify-content:space-between;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:8px;padding:9px 12px;">
+            <span style="font-size:13px;color:#059669;font-weight:700;">✓ Pixabay connected</span>
+            <button onclick="removePixabayKey()" style="background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;padding:4px 10px;font-family:inherit;">Change</button>
           </div>
         </div>
 

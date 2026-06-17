@@ -622,6 +622,57 @@
     60%      { transform: translateX(-4px); }
     80%      { transform: translateX(4px); }
   }
+
+  /* ── Profile Drawer ─────────────────────────────────────────── */
+  .profile-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.4); z-index: 8000;
+  }
+  .profile-overlay.open { display: block; }
+  .profile-drawer {
+    position: fixed; top: 0; right: -420px; width: 400px; max-width: 100vw;
+    height: 100vh; background: white; z-index: 8001;
+    box-shadow: -4px 0 40px rgba(0,0,0,.18);
+    transition: right .3s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .profile-drawer.open { right: 0; }
+  .profile-drawer-header {
+    padding: 18px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: white; flex-shrink: 0;
+  }
+  .profile-drawer-body { padding: 20px; overflow-y: auto; flex: 1; }
+  .profile-topbar-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--bg); border: 1.5px solid var(--border); border-radius: 20px;
+    padding: 4px 12px 4px 5px; cursor: pointer; font-family: inherit;
+    transition: all .15s; color: var(--text);
+  }
+  .profile-topbar-btn:hover { border-color: #6366F1; background: #EEF2FF; }
+  .profile-avatar-sm {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg,#3B82F6,#6366F1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: white; flex-shrink: 0;
+  }
+  .profile-avatar-lg {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg,#3B82F6,#6366F1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800; color: white; flex-shrink: 0;
+  }
+  .profile-section {
+    background: white; border: 1.5px solid var(--border); border-radius: 14px;
+    padding: 16px; margin-bottom: 14px;
+  }
+  .profile-section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--muted); margin-bottom: 12px;
+  }
+  @media (max-width: 768px) {
+    .profile-drawer { width: 100vw; }
+  }
 </style>
 </head>
 <body>
@@ -668,13 +719,6 @@
     </a>
   </nav>
   <div class="sidebar-footer">
-    <button onclick="document.getElementById('ai-settings-overlay').classList.add('open');updateUsageDisplay()" style="width:100%;background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:10px;padding:9px 12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;transition:border-color .15s;" onmouseover="this.style.borderColor='#6366F1'" onmouseout="this.style.borderColor='#E5E7EB'">
-      <span style="display:flex;align-items:center;gap:7px;">
-        <span style="font-size:15px;">⚡</span>
-        <span style="font-size:12px;font-weight:600;color:#374151;">AI Settings</span>
-      </span>
-      <span id="ai-settings-badge" style="font-size:11px;font-weight:600;"></span>
-    </button>
     Version 1.0 · May 2026
   </div>
 </aside>
@@ -690,7 +734,10 @@
       </svg>
     </button>
     <span class="topbar-title" id="topbar-title">Speaking Club Hub</span>
-    <span></span>
+    <button class="profile-topbar-btn" id="topbar-profile-btn" onclick="openProfile()">
+      <div class="profile-avatar-sm" id="topbar-avatar">?</div>
+      <span style="font-size:13px;font-weight:600;" id="topbar-profile-label">Sign in</span>
+    </button>
   </header>
 
   <div class="content">
@@ -2287,41 +2334,13 @@
         </div>
       </div>
 
-      <!-- SCREEN 1: Register -->
+      <!-- SCREEN 1: Sign in required -->
       <div class="test-screen active" id="test-screen-register">
-        <div class="test-register-box">
-          <h2>Before you start</h2>
-          <p>Enter your name and work email — your results will be saved and the admin can review them.</p>
-          <div class="test-field">
-            <label>Your name</label>
-            <input type="text" id="test-name" placeholder="Anna Kovalenko">
-          </div>
-          <div class="test-field">
-            <label>Work email</label>
-            <input type="email" id="test-email" placeholder="anna@studyless.com">
-            <div style="font-size:11px;color:var(--muted);margin-top:5px;">Use your work email — it must be real and accessible to you.</div>
-          </div>
-          <div id="test-reg-error" style="color:#EF4444;font-size:13px;margin-bottom:14px;display:none;"></div>
-          <button class="btn btn-primary" style="width:100%;margin-top:4px;" onclick="testRegister()">Send verification link →</button>
-        </div>
-      </div>
-
-      <!-- SCREEN 1.2: Email sent -->
-      <div class="test-screen" id="test-screen-email-sent">
-        <div style="max-width:480px;margin:0 auto;text-align:center;padding:20px 0;">
-          <div style="width:72px;height:72px;background:#EFF6FF;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 24px;">📧</div>
-          <h2 style="font-size:22px;font-weight:800;margin-bottom:12px;">Check your email</h2>
-          <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:8px;">We sent a verification link to:</p>
-          <div id="test-email-sent-addr" style="font-size:15px;font-weight:700;color:#1D4ED8;background:#EFF6FF;border-radius:10px;padding:10px 20px;display:inline-block;margin-bottom:24px;"></div>
-          <div style="background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:14px;padding:16px 20px;text-align:left;margin-bottom:28px;">
-            <div style="font-size:13px;color:#065F46;line-height:1.7;">
-              <div style="margin-bottom:6px;">1. Open your email inbox</div>
-              <div style="margin-bottom:6px;">2. Find the email from <strong>Speaking Club Hub</strong></div>
-              <div>3. Click the link — you will be signed in automatically</div>
-            </div>
-          </div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">The link expires in 1 hour. Check your spam folder if you don't see it.</div>
-          <button onclick="testBackToRegister()" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;">← Use a different email</button>
+        <div style="max-width:420px;margin:40px auto 0;text-align:center;">
+          <div style="width:72px;height:72px;background:#EFF6FF;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px;">🔐</div>
+          <h2 style="font-size:22px;font-weight:800;margin-bottom:10px;">Sign in to access tests</h2>
+          <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:28px;">Sign in with your work email to take tests, save your results, and track your progress across all devices.</p>
+          <button class="btn btn-primary" style="width:100%;font-size:15px;padding:14px;" onclick="openProfile()">Sign in →</button>
         </div>
       </div>
 
@@ -3326,52 +3345,14 @@ function testShowScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
-function testRegister() {
-  const name = document.getElementById('test-name').value.trim();
-  const email = document.getElementById('test-email').value.trim();
-  const errEl = document.getElementById('test-reg-error');
-  const btn = document.querySelector('#test-screen-register .btn-primary');
-  if (!name) { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
-  if (!email || !email.includes('@') || !email.includes('.')) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
-  errEl.style.display = 'none';
-  btn.disabled = true;
-  btn.textContent = 'Sending…';
-
-  const actionCodeSettings = {
-    url: window.location.origin + window.location.pathname,
-    handleCodeInApp: true,
-  };
-
-  auth.sendSignInLinkToEmail(email, actionCodeSettings)
-    .then(() => {
-      localStorage.setItem('emailForSignIn', email); // temp: needed for magic link on same device
-      localStorage.setItem('_pendingName', name);    // temp: consumed immediately after sign-in
-      document.getElementById('test-email-sent-addr').textContent = email;
-      btn.disabled = false;
-      btn.textContent = 'Send verification link →';
-      testShowScreen('test-screen-email-sent');
-    })
-    .catch(err => {
-      btn.disabled = false;
-      btn.textContent = 'Send verification link →';
-      errEl.textContent = 'Could not send email. Check the address and try again.';
-      errEl.style.display = 'block';
-      console.error(err);
-    });
-}
-
-function testBackToRegister() {
-  testShowScreen('test-screen-register');
-}
 
 function testLogout() {
   auth.signOut().catch(() => {});
   _teacher = null;
   _reviewCache = null;
+  _gemini.key = null;
   localStorage.removeItem('emailForSignIn');
   localStorage.removeItem('_pendingName');
-  document.getElementById('test-name').value = '';
-  document.getElementById('test-email').value = '';
   // Reset all admin/personal UI
   document.getElementById('test-admin-section').style.display = 'none';
   document.getElementById('test-admin-list').innerHTML = '';
@@ -3387,6 +3368,8 @@ function testLogout() {
   const badge = card.querySelector('.test-done-badge');
   if (badge) badge.remove();
   testShowScreen('test-screen-register');
+  _updateTopbarProfile();
+  initGeminiUI();
 }
 
 function testCheckDoneCards() {
@@ -3835,15 +3818,132 @@ function _completeEmailSignIn() {
     });
 }
 
+// ── Profile Drawer ────────────────────────────────────────────
+function openProfile() {
+  document.getElementById('profile-overlay').classList.add('open');
+  document.getElementById('profile-drawer').classList.add('open');
+  _updateProfileDrawer();
+}
+
+function closeProfile() {
+  document.getElementById('profile-overlay').classList.remove('open');
+  document.getElementById('profile-drawer').classList.remove('open');
+}
+
+function _updateTopbarProfile() {
+  const avatarEl = document.getElementById('topbar-avatar');
+  const labelEl = document.getElementById('topbar-profile-label');
+  if (!avatarEl || !labelEl) return;
+  if (_teacher) {
+    avatarEl.textContent = _teacher.name.trim().charAt(0).toUpperCase();
+    avatarEl.style.fontSize = '14px';
+    avatarEl.style.color = 'white';
+    labelEl.textContent = _teacher.name;
+  } else {
+    avatarEl.textContent = '?';
+    avatarEl.style.fontSize = '16px';
+    avatarEl.style.color = 'white';
+    labelEl.textContent = 'Sign in';
+  }
+}
+
+function _updateProfileDrawer() {
+  const signedOut = document.getElementById('profile-state-signout');
+  const signedIn = document.getElementById('profile-state-signin');
+  if (!signedOut || !signedIn) return;
+
+  if (_teacher) {
+    signedOut.style.display = 'none';
+    signedIn.style.display = 'block';
+    const initial = _teacher.name.trim().charAt(0).toUpperCase();
+    document.getElementById('profile-avatar-lg').textContent = initial;
+    document.getElementById('profile-display-name').textContent = _teacher.name;
+    document.getElementById('profile-display-email').textContent = _teacher.email;
+    document.getElementById('profile-edit-name').value = _teacher.name;
+  } else {
+    signedOut.style.display = 'block';
+    signedIn.style.display = 'none';
+    // Reset to sign-in form (not email-sent screen)
+    profileBackToSignIn();
+  }
+}
+
+function profileSignIn() {
+  const name = document.getElementById('profile-name-input').value.trim();
+  const email = document.getElementById('profile-email-input').value.trim();
+  const errEl = document.getElementById('profile-signin-error');
+  const btn = document.querySelector('#profile-signin-form .btn-primary');
+
+  errEl.style.display = 'none';
+  if (!name) { errEl.textContent = 'Please enter your name.'; errEl.style.display = 'block'; return; }
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    errEl.textContent = 'Please enter a valid email address.';
+    errEl.style.display = 'block'; return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const actionCodeSettings = {
+    url: window.location.origin + window.location.pathname,
+    handleCodeInApp: true,
+  };
+
+  auth.sendSignInLinkToEmail(email, actionCodeSettings)
+    .then(() => {
+      localStorage.setItem('emailForSignIn', email);
+      localStorage.setItem('_pendingName', name);
+      document.getElementById('profile-email-sent-addr').textContent = email;
+      document.getElementById('profile-signin-form').style.display = 'none';
+      document.getElementById('profile-email-sent').style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Send magic link →';
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.textContent = 'Send magic link →';
+      errEl.textContent = 'Could not send email. Check the address and try again.';
+      errEl.style.display = 'block';
+      console.error(err);
+    });
+}
+
+function profileBackToSignIn() {
+  const form = document.getElementById('profile-signin-form');
+  const sent = document.getElementById('profile-email-sent');
+  if (form) form.style.display = 'block';
+  if (sent) sent.style.display = 'none';
+}
+
+function saveProfileName() {
+  const newName = document.getElementById('profile-edit-name').value.trim();
+  if (!newName || !_teacher) return;
+  _teacher.name = newName;
+  document.getElementById('profile-display-name').textContent = newName;
+  document.getElementById('profile-avatar-lg').textContent = newName.charAt(0).toUpperCase();
+  _renderUserBlock(newName, _teacher.email);
+  _updateTopbarProfile();
+  db.collection('users').doc(_teacher.uid).update({ name: newName }).catch(() => {});
+}
+
+function profileSignOut() {
+  closeProfile();
+  testLogout();
+}
+
+// ── End Profile Drawer ────────────────────────────────────────
 function _onAuthReady() {
   const { name, email, uid } = _teacher;
   _renderUserBlock(name, email);
+  _updateTopbarProfile();
+  _updateProfileDrawer();
   // Load Gemini key from Firestore for this user
   db.collection('users').doc(uid).get().then(doc => {
     if (doc.exists && doc.data().geminiKey) {
       _gemini.key = doc.data().geminiKey;
     }
     initGeminiUI();
+    _updateProfileDrawer();
   }).catch(() => initGeminiUI());
   testCheckDoneCards();
   const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
@@ -4541,75 +4641,142 @@ function printLessonPlan() {
 }
 </script>
 
-<!-- AI Settings modal — outside all sections so it works from anywhere -->
-<div class="tex-overlay" id="ai-settings-overlay" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="tex-modal" style="max-width:560px;">
-    <div class="tex-header" style="padding-bottom:16px;border-bottom:1px solid #F3F4F6;">
-      <div class="tex-icon">⚡</div>
-      <h3>AI Settings — Gemini API</h3>
-      <button class="tex-close" onclick="document.getElementById('ai-settings-overlay').classList.remove('open')">✕</button>
-    </div>
-    <div class="tex-body" style="padding-top:20px;">
+<!-- Profile drawer — personal cabinet, slide-in from right -->
+<div class="profile-overlay" id="profile-overlay" onclick="if(event.target===this)closeProfile()"></div>
+<div class="profile-drawer" id="profile-drawer">
 
-      <div id="gemini-setup" style="display:none;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:16px;margin-bottom:20px;">
-        <p style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px;">🔑 Connect your Gemini API key</p>
-        <p style="font-size:12px;color:#B45309;margin-bottom:12px;">Free, no credit card needed. Get it at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#6366F1;font-weight:600;">aistudio.google.com</a></p>
+  <!-- Header -->
+  <div class="profile-drawer-header">
+    <span style="font-size:15px;font-weight:800;color:#111827;">My Profile</span>
+    <button onclick="closeProfile()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#9CA3AF;line-height:1;padding:0;">✕</button>
+  </div>
+
+  <div class="profile-drawer-body">
+
+    <!-- STATE: not signed in -->
+    <div id="profile-state-signout">
+
+      <!-- Sign-in form sub-screen -->
+      <div id="profile-signin-form">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="width:64px;height:64px;background:linear-gradient(135deg,#EFF6FF,#E0E7FF);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;">👤</div>
+          <div style="font-size:16px;font-weight:800;color:#111827;margin-bottom:6px;">Sign in to Speaking Club Hub</div>
+          <div style="font-size:13px;color:#6B7280;line-height:1.6;">Enter your name and work email.<br>We'll send you a magic link — no password needed.</div>
+        </div>
+        <div class="profile-section">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Your name</label>
+              <input type="text" id="profile-name-input" placeholder="Anna Kovalenko"
+                style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Work email</label>
+              <input type="email" id="profile-email-input" placeholder="anna@studyless.com"
+                style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
+              <div style="font-size:11px;color:#9CA3AF;margin-top:5px;">Use your real email — you'll confirm it via link.</div>
+            </div>
+            <div id="profile-signin-error" style="display:none;font-size:13px;color:#EF4444;background:#FEF2F2;border-radius:8px;padding:10px 12px;"></div>
+            <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="profileSignIn()">Send magic link →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email sent sub-screen -->
+      <div id="profile-email-sent" style="display:none;text-align:center;">
+        <div style="width:72px;height:72px;background:#EFF6FF;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px;">📧</div>
+        <div style="font-size:18px;font-weight:800;color:#111827;margin-bottom:10px;">Check your email</div>
+        <p style="font-size:13px;color:#6B7280;line-height:1.7;margin-bottom:8px;">We sent a verification link to:</p>
+        <div id="profile-email-sent-addr" style="font-size:14px;font-weight:700;color:#1D4ED8;background:#EFF6FF;border-radius:10px;padding:10px 20px;display:inline-block;margin-bottom:20px;"></div>
+        <div style="background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:14px 16px;text-align:left;margin-bottom:24px;">
+          <div style="font-size:12px;color:#065F46;line-height:1.8;">
+            <div>1. Open your email inbox</div>
+            <div>2. Find the email from <strong>Speaking Club Hub</strong></div>
+            <div>3. Click the link — you'll be signed in automatically</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#9CA3AF;margin-bottom:16px;">Link expires in 1 hour. Check spam if you don't see it.</div>
+        <button onclick="profileBackToSignIn()" style="background:none;border:none;color:#6B7280;font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;">← Use a different email</button>
+      </div>
+
+    </div>
+
+    <!-- STATE: signed in -->
+    <div id="profile-state-signin" style="display:none;">
+
+      <!-- Profile card -->
+      <div class="profile-section" style="display:flex;align-items:center;gap:14px;">
+        <div id="profile-avatar-lg" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#6366F1);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:white;flex-shrink:0;">?</div>
+        <div style="min-width:0;">
+          <div id="profile-display-name" style="font-size:16px;font-weight:800;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div id="profile-display-email" style="font-size:12px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        </div>
+      </div>
+
+      <!-- Edit name -->
+      <div class="profile-section">
+        <div class="profile-section-title">Display name</div>
         <div style="display:flex;gap:8px;">
-          <input type="password" id="gemini-key-input" placeholder="Paste your API key here… (AIza...)"
-            style="flex:1;padding:9px 12px;border:1.5px solid #FCD34D;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-          <button class="btn btn-primary" onclick="saveGeminiKey()" style="white-space:nowrap;">Save key</button>
+          <input type="text" id="profile-edit-name" placeholder="Your name"
+            style="flex:1;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-size:14px;font-family:inherit;outline:none;">
+          <button class="btn btn-primary" onclick="saveProfileName()" style="white-space:nowrap;padding:9px 16px;">Save</button>
         </div>
       </div>
 
-      <div id="gemini-status" style="display:none;flex-direction:column;gap:8px;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:12px 16px;margin-bottom:20px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:13px;color:#059669;font-weight:700;">✓ Gemini AI connected</span>
-          <button onclick="removeGeminiKey()" style="background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;padding:5px 12px;font-family:inherit;">Change key</button>
-        </div>
-        <div style="border-top:1px solid #BBF7D0;padding-top:8px;display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:11px;color:#6B7280;">Getting errors? Reset the AI model cache.</span>
-          <button id="reset-model-btn" onclick="resetGeminiModel()" style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:7px;font-size:11px;font-weight:600;color:#92400E;cursor:pointer;padding:4px 10px;font-family:inherit;">⚡ Fix errors</button>
-        </div>
-      </div>
+      <!-- AI Settings -->
+      <div class="profile-section">
+        <div class="profile-section-title">AI Settings — Gemini</div>
 
-      <div id="usage-display" style="background:#F8FAFF;border:1.5px solid #E0E7FF;border-radius:12px;padding:12px 16px;margin-bottom:20px;">
-        <span style="color:#6B7280;font-size:12px;">No requests today yet.</span>
-      </div>
-
-      <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:14px;">How to get a free API key:</div>
-      <div style="display:flex;flex-direction:column;gap:14px;">
-
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="min-width:28px;height:28px;border-radius:50%;background:#6366F1;color:white;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
-          <div>
-            <p style="font-weight:700;font-size:13px;margin-bottom:3px;">Open Google AI Studio</p>
-            <p style="font-size:12px;color:#6B7280;">Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#6366F1;font-weight:600;">aistudio.google.com/app/apikey</a> — you need a Google (Gmail) account.</p>
+        <div id="gemini-setup" style="display:none;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:10px;padding:14px;margin-bottom:12px;">
+          <p style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px;">🔑 Connect your Gemini API key</p>
+          <p style="font-size:12px;color:#B45309;margin-bottom:10px;">Free, no credit card. Get it at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#6366F1;font-weight:600;">aistudio.google.com</a></p>
+          <div style="display:flex;gap:8px;">
+            <input type="password" id="gemini-key-input" placeholder="AIza..."
+              style="flex:1;padding:9px 12px;border:1.5px solid #FCD34D;border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
+            <button class="btn btn-primary" onclick="saveGeminiKey()" style="white-space:nowrap;">Save</button>
           </div>
         </div>
 
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="min-width:28px;height:28px;border-radius:50%;background:#6366F1;color:white;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
-          <div>
-            <p style="font-weight:700;font-size:13px;margin-bottom:3px;">Click "Create API key"</p>
-            <p style="font-size:12px;color:#6B7280;">You'll see a blue button. If asked to select a project — choose <em>"Create in new project"</em>.</p>
+        <div id="gemini-status" style="display:none;flex-direction:column;gap:8px;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:13px;color:#059669;font-weight:700;">✓ Gemini AI connected</span>
+            <button onclick="removeGeminiKey()" style="background:#F3F4F6;border:1.5px solid #E5E7EB;border-radius:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;padding:5px 12px;font-family:inherit;">Change key</button>
+          </div>
+          <div style="border-top:1px solid #BBF7D0;padding-top:8px;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:11px;color:#6B7280;">Getting errors? Reset the model cache.</span>
+            <button id="reset-model-btn" onclick="resetGeminiModel()" style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:7px;font-size:11px;font-weight:600;color:#92400E;cursor:pointer;padding:4px 10px;font-family:inherit;">⚡ Fix errors</button>
           </div>
         </div>
 
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="min-width:28px;height:28px;border-radius:50%;background:#6366F1;color:white;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
-          <div>
-            <p style="font-weight:700;font-size:13px;margin-bottom:3px;">Copy the key</p>
-            <p style="font-size:12px;color:#6B7280;">A code starting with <code style="background:#F3F4F6;padding:1px 5px;border-radius:4px;">AIza...</code> will appear. Copy it and paste above.</p>
-          </div>
+        <div id="usage-display" style="background:#F8FAFF;border:1.5px solid #E0E7FF;border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+          <span style="color:#6B7280;font-size:12px;">No requests today yet.</span>
         </div>
 
+        <details style="font-size:12px;color:#6B7280;">
+          <summary style="cursor:pointer;font-weight:600;color:#374151;margin-bottom:10px;outline:none;">How to get a free API key</summary>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div style="min-width:22px;height:22px;border-radius:50%;background:#6366F1;color:white;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+              <div><strong>Open Google AI Studio</strong><br>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#6366F1;">aistudio.google.com/app/apikey</a></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div style="min-width:22px;height:22px;border-radius:50%;background:#6366F1;color:white;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+              <div><strong>Click "Create API key"</strong><br>If asked for a project — choose "Create in new project".</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div style="min-width:22px;height:22px;border-radius:50%;background:#6366F1;color:white;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+              <div><strong>Copy the key</strong><br>Starts with <code style="background:#F3F4F6;padding:1px 4px;border-radius:3px;">AIza...</code> — paste it above.</div>
+            </div>
+          </div>
+        </details>
+
       </div>
 
-      <div style="margin-top:16px;text-align:center;">
-        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn btn-primary" style="text-decoration:none;display:inline-block;">Open Google AI Studio →</a>
-      </div>
+      <!-- Sign out -->
+      <button onclick="profileSignOut()" style="width:100%;padding:12px;background:#FEF2F2;border:1.5px solid #FECACA;border-radius:12px;color:#DC2626;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Sign out</button>
 
     </div>
+
   </div>
 </div>
 

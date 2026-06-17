@@ -2510,6 +2510,7 @@ const auth = firebase.auth();
 // ── Session state (replaces localStorage for teacher data) ────
 let _teacher = null;      // { name, email, uid } — set after Firebase Auth
 let _reviewCache = null;  // in-memory review data cache
+let _notifUnsubs = [];    // Firestore real-time notification listeners
 
 // ── Gemini state (replaces localStorage for AI settings) ──────
 const _gemini = {
@@ -3374,6 +3375,8 @@ function testLogout() {
   _teacher = null;
   _reviewCache = null;
   _gemini.key = null;
+  _notifUnsubs.forEach(u => u());
+  _notifUnsubs = [];
   localStorage.removeItem('emailForSignIn');
   localStorage.removeItem('_pendingName');
   // Reset all admin/personal UI
@@ -3973,32 +3976,43 @@ function _emailKey(email) {
   return email.replace(/[^a-z0-9]/gi, '_').toLowerCase();
 }
 
-async function _loadNotifications() {
+function _loadNotifications() {
+  // Stop existing listeners before starting new ones
+  _notifUnsubs.forEach(u => u());
+  _notifUnsubs = [];
   if (!_teacher) return;
+
   const emailKey = _emailKey(_teacher.email);
+  let _personal = [];
+  let _global = [];
 
-  // Load personal notifications
-  const personalSnap = await db.collection('user_notifications').doc(emailKey)
-    .collection('items').orderBy('ts', 'desc').limit(30).get().catch(() => null);
+  const _merge = () => {
+    const seenIds = _teacher._seenAnnouncements || [];
+    const globalWithRead = _global.map(n => ({ ...n, read: seenIds.includes(n.id) }));
+    const all = [..._personal, ...globalWithRead]
+      .sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+    _teacher._notifications = all;
+    const unread = all.filter(n => !n.read).length;
+    _updateNotifBadge(unread);
+    _renderNotifications(all);
+  };
 
-  const personal = personalSnap ? personalSnap.docs.map(d => ({ id: d.id, ...d.data(), _src: 'personal' })) : [];
+  // Personal notifications — real-time
+  const unsub1 = db.collection('user_notifications').doc(emailKey)
+    .collection('items').orderBy('ts', 'desc').limit(30)
+    .onSnapshot(snap => {
+      _personal = snap.docs.map(d => ({ id: d.id, ...d.data(), _src: 'personal' }));
+      _merge();
+    }, () => {});
 
-  // Load global announcements
-  const announceSnap = await db.collection('announcements').orderBy('ts', 'desc').limit(20).get().catch(() => null);
-  const seenIds = _teacher._seenAnnouncements || [];
-  const global = announceSnap ? announceSnap.docs.map(d => ({
-    id: d.id, ...d.data(),
-    read: seenIds.includes(d.id),
-    _src: 'global'
-  })) : [];
+  // Global announcements — real-time
+  const unsub2 = db.collection('announcements').orderBy('ts', 'desc').limit(20)
+    .onSnapshot(snap => {
+      _global = snap.docs.map(d => ({ id: d.id, ...d.data(), _src: 'global' }));
+      _merge();
+    }, () => {});
 
-  // Merge and sort by ts desc
-  const all = [...personal, ...global].sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
-  _teacher._notifications = all;
-
-  const unread = all.filter(n => !n.read).length;
-  _updateNotifBadge(unread);
-  _renderNotifications(all);
+  _notifUnsubs = [unsub1, unsub2];
 }
 
 function _renderNotifications(notifs) {

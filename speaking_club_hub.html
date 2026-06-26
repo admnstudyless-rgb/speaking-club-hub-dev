@@ -280,6 +280,47 @@
     flex-shrink: 0;
   }
 
+  /* ── STAGE ACCORDION (merged Structure + Stage-by-Stage) ── */
+  .stage-head { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .stage-head h4 { font-size: 14px; font-weight: 700; margin: 0; }
+  .stage-purpose { font-size: 12.5px; color: var(--muted); margin: 4px 0 0; font-style: italic; }
+  .stage-toggle-arrow { font-size: 11px; color: var(--muted); transition: transform .2s; flex-shrink: 0; }
+  .stage.open .stage-toggle-arrow { transform: rotate(90deg); }
+  .tag { cursor: pointer; transition: filter .15s; }
+  .tag:hover { filter: brightness(.95); }
+  .tag-note {
+    display: none; font-size: 12.5px; color: var(--muted);
+    background: var(--bg); border-radius: 8px; padding: 8px 12px;
+    margin: 4px 0 0; line-height: 1.5;
+  }
+  .tag-note.open { display: block; animation: fadeIn .2s ease; }
+  .stage-detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .stage.open .stage-detail { display: block; animation: fadeIn .25s ease; }
+  .stage-detail .mistake { margin-top: 12px; font-size: 13px; color: var(--muted); }
+
+  /* ── SAMPLE LESSON ACCORDION ── */
+  .lesson-card {
+    border: 1.5px solid var(--border); border-radius: 14px;
+    margin-bottom: 12px; overflow: hidden; transition: box-shadow .2s; background: white;
+  }
+  .lesson-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+  .lesson-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; cursor: pointer; background: none;
+    border: none; width: 100%; text-align: left; font-family: inherit;
+    transition: background .15s;
+  }
+  .lesson-header:hover { background: var(--bg); }
+  .lesson-level { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
+  .lesson-title { font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
+  .lesson-arrow { font-size: 13px; color: var(--muted); flex-shrink: 0; transition: transform .2s; }
+  .lesson-card.open .lesson-arrow { transform: rotate(90deg); }
+  .lesson-body { display: none; padding: 4px 20px 22px; }
+  .lesson-card.open .lesson-body { display: block; animation: fadeIn .25s ease; }
+  .lesson-divider { height: 1px; background: var(--border); margin: 0 0 18px; }
+  .lesson-step-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 16px 0 8px; }
+  .lesson-step-label:first-child { margin-top: 0; }
+
   /* Trigger types */
   .trigger-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px; }
   .trigger-type {
@@ -752,7 +793,7 @@
       <span class="dot" style="background:#8B5CF6"></span> 3. Live Triggers
     </a>
     <a class="nav-item" onclick="showModule(4)" href="#">
-      <span class="dot" style="background:#EC4899"></span> 4. Stage-by-Stage Guide
+      <span class="dot" style="background:#EC4899"></span> 4. Sample Lessons
     </a>
     <a class="nav-item" onclick="showModule(5)" href="#">
       <span class="dot" style="background:#F59E0B"></span> 5. Why Structure + Spark
@@ -840,8 +881,8 @@
         </div>
         <div class="module-card" onclick="showModule(4)" style="--c:var(--pink);--cs:rgba(236,72,153,.4)">
           <div class="card-top"><div class="icon" style="background:#FDF2F8">🗺️</div><span class="num">04</span></div>
-          <h3>Stage-by-Stage Guide</h3>
-          <p>Deep dive into each stage with real examples and level differentiation.</p>
+          <h3>Sample Lessons</h3>
+          <p>Three full lessons, ready to teach — one for each level, A1 to C2.</p>
           <span class="arrow">→</span>
         </div>
         <div class="module-card" onclick="showModule(5)" style="--c:var(--amber);--cs:rgba(245,158,11,.4)">
@@ -1036,102 +1077,236 @@
 
       <div class="card">
         <h3>The 6-Stage Framework</h3>
-        <p style="margin-bottom: 16px;">Every Speaking Club session follows this structure — adapt timing, never remove stages.</p>
+        <p style="margin-bottom: 16px;">Every Speaking Club session follows this structure — adapt timing, never remove stages. Click any stage to open the full guide: goal, script, and common mistakes.</p>
 
         <!-- Stage 1 -->
-        <div class="stage">
+        <div class="stage" id="stage-1" style="cursor:default;">
           <div class="stage-num" style="background:#EFF6FF; color:#1D4ED8">1</div>
-          <div class="stage-body">
-            <h4>Warm-Up</h4>
+          <div class="stage-body" style="flex:1;">
+            <div class="stage-head" onclick="toggleStage('stage-1')">
+              <h4>Warm-Up</h4>
+              <span class="stage-toggle-arrow">▶</span>
+            </div>
+            <p class="stage-purpose">Purpose: settle the group and set a relaxed tone before real speaking starts.</p>
             <p>Check in all students and explain the rules for the lesson. Quick and welcoming — sets the tone.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
               <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
-              <span class="tag" style="background:#EFF6FF; color:#1D4ED8">👋 Quick check-in question</span>
-              <span class="tag" style="background:#EFF6FF; color:#1D4ED8">💬 "One word about your week"</span>
-              <span class="tag" style="background:#EFF6FF; color:#1D4ED8">📋 Rules reminder</span>
+              <span class="tag" style="background:#EFF6FF; color:#1D4ED8" onclick="toggleTagNote(this)">👋 Quick check-in question</span>
+              <div class="tag-note">"Hey everyone! How's it going today — good week?"</div>
+              <span class="tag" style="background:#EFF6FF; color:#1D4ED8" onclick="toggleTagNote(this)">💬 "One word about your week"</span>
+              <div class="tag-note">Each student says just one word describing their week — fast, low-pressure, everyone speaks in the first 30 seconds.</div>
+              <span class="tag" style="background:#EFF6FF; color:#1D4ED8" onclick="toggleTagNote(this)">📋 Rules reminder</span>
+              <div class="tag-note">"Speak as much as you can, mistakes are fine — just go for it!"</div>
+            </div>
+            <div class="stage-detail" id="stage-detail-1">
+              <div class="highlight-box" style="background:#EFF6FF;">
+                <strong>Example:</strong><br>
+                <span style="font-size: 13px; color: var(--muted);">"Hi everyone! Great to see you all. Today we'll do Speaking Club — you know the drill: speak as much as you can, don't worry about mistakes, just go for it. Let's start!"</span>
+              </div>
+              <p class="mistake"><strong>⚠️ Common mistake:</strong> Turning warm-up into a long chat. Keep it to 1–2 minutes — save the energy for the discussion.</p>
             </div>
           </div>
           <div class="stage-time" style="background:#EFF6FF; color:#1D4ED8">1–2 min</div>
         </div>
 
         <!-- Stage 2 -->
-        <div class="stage">
+        <div class="stage" id="stage-2" style="cursor:default;">
           <div class="stage-num" style="background:#FFF7ED; color:#C2410C">2</div>
-          <div class="stage-body">
-            <h4>Lead-In</h4>
+          <div class="stage-body" style="flex:1;">
+            <div class="stage-head" onclick="toggleStage('stage-2')">
+              <h4>Lead-In</h4>
+              <span class="stage-toggle-arrow">▶</span>
+            </div>
+            <p class="stage-purpose">Purpose: hook attention and hand the floor to students immediately.</p>
             <p>A general question or introduction to the topic. Start learner-centered — brief intro, then pass the floor. Ensure it connects to the session theme.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
               <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
-              <span class="tag" style="background:#FFF7ED; color:#C2410C">✨ Trigger (quote / fact / scenario / hot take)</span>
-              <span class="tag" style="background:#FFF7ED; color:#C2410C">🖼️ Image or video hook</span>
-              <span class="tag" style="background:#FFF7ED; color:#C2410C">❓ Provocative opening question</span>
+              <span class="tag" style="background:#FFF7ED; color:#C2410C" onclick="toggleTagNote(this)">✨ Trigger (quote / fact / scenario / hot take)</span>
+              <div class="tag-note">Present it, then immediately ask: "What's your first reaction?"</div>
+              <span class="tag" style="background:#FFF7ED; color:#C2410C" onclick="toggleTagNote(this)">🖼️ Image or video hook</span>
+              <div class="tag-note">Show it silently for 10 seconds before asking anything — let them react first.</div>
+              <span class="tag" style="background:#FFF7ED; color:#C2410C" onclick="toggleTagNote(this)">❓ Provocative opening question</span>
+              <div class="tag-note">Ask something with no obvious right answer — that's what gets hands up.</div>
+            </div>
+            <div class="stage-detail" id="stage-detail-2">
+              <div class="highlight-box" style="background:#FFF7ED;">
+                <strong>Script:</strong><br>
+                <span style="font-size: 13px; color: var(--muted);">"Today we're going to talk about [topic]. [Present trigger — quote / image / fact / scenario.] What do you think? What's your first reaction?"</span>
+              </div>
+              <p class="mistake"><strong>⚠️ Common mistake:</strong> Spending too long introducing the topic yourself. Present it, then pass the floor straight to students.</p>
             </div>
           </div>
           <div class="stage-time" style="background:#FFF7ED; color:#C2410C">3–5 min</div>
         </div>
 
         <!-- Stage 3 -->
-        <div class="stage">
+        <div class="stage" id="stage-3" style="cursor:default;">
           <div class="stage-num" style="background:#F5F3FF; color:#6D28D9">3</div>
-          <div class="stage-body">
-            <h4>Pre-Teaching Vocabulary</h4>
+          <div class="stage-body" style="flex:1;">
+            <div class="stage-head" onclick="toggleStage('stage-3')">
+              <h4>Pre-Teaching Vocabulary</h4>
+              <span class="stage-toggle-arrow">▶</span>
+            </div>
+            <p class="stage-purpose">Purpose: remove the language barrier before students need these words.</p>
             <p>Max 5–8 words or phrases. Check meaning, form (noun/adjective, countable/uncountable), and pronunciation. Ask follow-up questions to confirm understanding.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
               <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
-              <span class="tag" style="background:#F5F3FF; color:#6D28D9">🔤 Guess from context</span>
-              <span class="tag" style="background:#F5F3FF; color:#6D28D9">🔊 Pronunciation drill</span>
-              <span class="tag" style="background:#F5F3FF; color:#6D28D9">✏️ "Use it in a sentence"</span>
-              <span class="tag" style="background:#F5F3FF; color:#6D28D9">❓ Concept check questions</span>
+              <span class="tag" style="background:#F5F3FF; color:#6D28D9" onclick="toggleTagNote(this)">🔤 Guess from context</span>
+              <div class="tag-note">Give a sentence with the word blanked out; students guess the meaning before you confirm it.</div>
+              <span class="tag" style="background:#F5F3FF; color:#6D28D9" onclick="toggleTagNote(this)">🔊 Pronunciation drill</span>
+              <div class="tag-note">Model the word, then have the whole group repeat it twice. "Repeat after me: re-SIL-ient. Everyone!"</div>
+              <span class="tag" style="background:#F5F3FF; color:#6D28D9" onclick="toggleTagNote(this)">✏️ "Use it in a sentence"</span>
+              <div class="tag-note">Cold-call a student to build their own sentence with the word right away.</div>
+              <span class="tag" style="background:#F5F3FF; color:#6D28D9" onclick="toggleTagNote(this)">❓ Concept check questions</span>
+              <div class="tag-note">"If someone is resilient, do they give up easily — yes or no?"</div>
+            </div>
+            <div class="stage-detail" id="stage-detail-3">
+              <p style="font-size: 14px; margin-bottom: 4px;">For each word, check three things:</p>
+              <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                  <div style="background:#EDE9FE; color:#6D28D9; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Meaning</div>
+                  <p style="font-size: 13px; color: var(--muted); margin: 0;">Concept check questions: "If someone is resilient, do they give up easily — yes or no?"</p>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                  <div style="background:#EDE9FE; color:#6D28D9; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Form</div>
+                  <p style="font-size: 13px; color: var(--muted); margin: 0;">Is it a noun, verb, adjective? Countable or uncountable? "We say 'resilience' (noun) or 'resilient' (adjective)."</p>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                  <div style="background:#EDE9FE; color:#6D28D9; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Pronunciation</div>
+                  <p style="font-size: 13px; color: var(--muted); margin: 0;">Model it, then drill it. "Repeat after me: re-SIL-ient. Everyone!"</p>
+                </div>
+              </div>
+              <p class="mistake"><strong>⚠️ Common mistake:</strong> Teaching 10+ words — students can't absorb them all. Stick to 5–8 max and make sure they actually use them in Stage 4.</p>
             </div>
           </div>
           <div class="stage-time" style="background:#F5F3FF; color:#6D28D9">6–8 min</div>
         </div>
 
         <!-- Stage 4 -->
-        <div class="stage">
+        <div class="stage" id="stage-4" style="cursor:default;">
           <div class="stage-num" style="background:#F0FDF4; color:#047857">4</div>
-          <div class="stage-body">
-            <h4>General Discussion</h4>
-            <p>Goal: every student gets equal speaking time. Use pre-taught vocabulary in questions, encourage students to use it in answers. Manage time per group size (see calculator below).</p>
+          <div class="stage-body" style="flex:1;">
+            <div class="stage-head" onclick="toggleStage('stage-4')">
+              <h4>General Discussion</h4>
+              <span class="stage-toggle-arrow">▶</span>
+            </div>
+            <p class="stage-purpose">Purpose: the core of the lesson — equal airtime for everyone, growing depth.</p>
+            <p>Goal: every student gets equal speaking time. Use pre-taught vocabulary in questions, encourage students to use it in answers. Manage time based on group size — the bigger the group, the less time per student, so plan turns before you start.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
               <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
-              <span class="tag" style="background:#F0FDF4; color:#047857">🎯 Layered questions (facts → opinions → personal)</span>
-              <span class="tag" style="background:#F0FDF4; color:#047857">⏱️ Phone timer per student</span>
-              <span class="tag" style="background:#F0FDF4; color:#047857">🔄 Peer-to-peer responses</span>
-              <span class="tag" style="background:#F0FDF4; color:#047857">💡 Pivot phrases when energy drops</span>
+              <span class="tag" style="background:#F0FDF4; color:#047857" onclick="toggleTagNote(this)">🎯 Layered questions (facts → opinions → personal)</span>
+              <div class="tag-note">Start with "what," move to "why," end with "you" — see the full breakdown below.</div>
+              <span class="tag" style="background:#F0FDF4; color:#047857" onclick="toggleTagNote(this)">⏱️ Phone timer per student</span>
+              <div class="tag-note">Set 60–90 sec per turn so no one accidentally takes over the floor.</div>
+              <span class="tag" style="background:#F0FDF4; color:#047857" onclick="toggleTagNote(this)">🔄 Peer-to-peer responses</span>
+              <div class="tag-note">"Do you agree with what [Name] just said?" — keeps it a conversation, not a Q&A with you.</div>
+              <span class="tag" style="background:#F0FDF4; color:#047857" onclick="toggleTagNote(this)">💡 Pivot phrases when energy drops</span>
+              <div class="tag-note">"Is that always true?" · "What's the opposite view?" — see the full list below.</div>
+            </div>
+            <div class="stage-detail" id="stage-detail-4">
+              <p style="font-size: 14px; margin-bottom: 12px;">Build questions in layers — from surface to depth:</p>
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                  <div style="background:#DBEAFE; color:#1D4ED8; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Layer 1</div>
+                  <div><strong style="font-size: 13px;">Facts &amp; Understanding</strong> <span style="font-size: 13px; color: var(--muted);">— "What does this mean?" · "What do you know about this?"</span></div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                  <div style="background:#D1FAE5; color:#065F46; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Layer 2</div>
+                  <div><strong style="font-size: 13px;">Opinions &amp; Analysis</strong> <span style="font-size: 13px; color: var(--muted);">— "Do you agree? Why?" · "What are the pros and cons?"</span></div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                  <div style="background:#FCE7F3; color:#BE185D; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Layer 3</div>
+                  <div><strong style="font-size: 13px;">Personal Application</strong> <span style="font-size: 13px; color: var(--muted);">— "Has this happened to you?" · "How does this connect to your life?"</span></div>
+                </div>
+              </div>
+              <div class="highlight-box" style="background:#F0FDF4; margin-top: 4px;">
+                <strong style="color:#047857">When energy drops — pivot phrases:</strong><br>
+                <span style="font-size: 13px; color: var(--muted);">"Is that always true?" · "What's the opposite view?" · "Has your opinion changed?" · "What would you do differently?" · "Imagine you had to defend the other side…"</span>
+              </div>
             </div>
           </div>
           <div class="stage-time" style="background:#F0FDF4; color:#047857">15–20 min</div>
         </div>
 
         <!-- Stage 5 -->
-        <div class="stage">
+        <div class="stage" id="stage-5" style="cursor:default;">
           <div class="stage-num" style="background:#FDF2F8; color:#BE185D">5</div>
-          <div class="stage-body">
-            <h4>Discussion in Pairs / Project Work</h4>
+          <div class="stage-body" style="flex:1;">
+            <div class="stage-head" onclick="toggleStage('stage-5')">
+              <h4>Discussion in Pairs / Project Work</h4>
+              <span class="stage-toggle-arrow">▶</span>
+            </div>
+            <p class="stage-purpose">Purpose: independent work where every student must produce language, not just listen.</p>
             <p>Breakout rooms in pairs (or threes if needed). Prep time 10–12 min, then 6–7 min for presentations. Assign task: debate, project, role-play. Give students a reason to listen (notes, summary).</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
               <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
-              <span class="tag" style="background:#FDF2F8; color:#BE185D">⚔️ Debate (for vs. against)</span>
-              <span class="tag" style="background:#FDF2F8; color:#BE185D">🎭 Role-play scenario</span>
-              <span class="tag" style="background:#FDF2F8; color:#BE185D">📊 Mini project presentation</span>
-              <span class="tag" style="background:#FDF2F8; color:#BE185D">📝 Peer feedback &amp; notes</span>
+              <span class="tag" style="background:#FDF2F8; color:#BE185D" onclick="toggleTagNote(this)">⚔️ Debate (for vs. against)</span>
+              <div class="tag-note">Split the group, assign sides, 10 min to build arguments before presenting.</div>
+              <span class="tag" style="background:#FDF2F8; color:#BE185D" onclick="toggleTagNote(this)">🎭 Role-play scenario</span>
+              <div class="tag-note">Give each pair a role card with a specific goal to achieve in character.</div>
+              <span class="tag" style="background:#FDF2F8; color:#BE185D" onclick="toggleTagNote(this)">📊 Mini project presentation</span>
+              <div class="tag-note">Cap it at 2 minutes — forces them to prioritize their strongest point.</div>
+              <span class="tag" style="background:#FDF2F8; color:#BE185D" onclick="toggleTagNote(this)">📝 Peer feedback &amp; notes</span>
+              <div class="tag-note">Listeners must ask one question after each presentation — gives them a reason to actually listen.</div>
+            </div>
+            <div class="stage-detail" id="stage-detail-5">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
+                  <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">1.</span>
+                  <span>Divide into pairs (or threes if the number is odd). Always use breakout rooms — even with just 2–3 students.</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
+                  <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">2.</span>
+                  <span>Give them 10–12 minutes and a clear task: debate, project, role-play. <em>Example: "Group A — 5 arguments for AI in schools. Group B — 5 arguments against."</em></span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
+                  <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">3.</span>
+                  <span>Give a reason to listen: "Take notes — you'll need to respond to the other group's arguments."</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
+                  <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">4.</span>
+                  <span>Monitor breakout rooms — give feedback, support, and ideas.</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
+                  <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">5.</span>
+                  <span>Leave 6–7 minutes after breakout rooms for presentations and group discussion.</span>
+                </div>
+              </div>
+              <p class="mistake"><strong>⚠️ Common mistake:</strong> Skipping breakout rooms when the group is small. Even 2 students benefit from independent pair work — it changes the dynamic.</p>
             </div>
           </div>
           <div class="stage-time" style="background:#FDF2F8; color:#BE185D">15–20 min</div>
         </div>
 
         <!-- Stage 6 -->
-        <div class="stage">
+        <div class="stage" id="stage-6" style="cursor:default;">
           <div class="stage-num" style="background:#F0FDFA; color:#0F766E">6</div>
-          <div class="stage-body">
-            <h4>Feedback &amp; Wrap-Up</h4>
+          <div class="stage-body" style="flex:1;">
+            <div class="stage-head" onclick="toggleStage('stage-6')">
+              <h4>Feedback &amp; Wrap-Up</h4>
+              <span class="stage-toggle-arrow">▶</span>
+            </div>
+            <p class="stage-purpose">Purpose: close the loop so students feel the lesson was complete.</p>
             <p>Summarize key takeaways. Highlight common mistakes and offer corrections. Keep it positive and forward-looking.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
               <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
-              <span class="tag" style="background:#F0FDFA; color:#0F766E">📋 Error correction board</span>
-              <span class="tag" style="background:#F0FDFA; color:#0F766E">🏆 Vocabulary recap (3–5 words)</span>
-              <span class="tag" style="background:#F0FDFA; color:#0F766E">💬 One-sentence takeaway per student</span>
+              <span class="tag" style="background:#F0FDFA; color:#0F766E" onclick="toggleTagNote(this)">📋 Error correction board</span>
+              <div class="tag-note">Write 2–3 recurring mistakes on screen and correct them together as a group.</div>
+              <span class="tag" style="background:#F0FDFA; color:#0F766E" onclick="toggleTagNote(this)">🏆 Vocabulary recap (3–5 words)</span>
+              <div class="tag-note">Point to the board, elicit the meaning from the group one more time.</div>
+              <span class="tag" style="background:#F0FDFA; color:#0F766E" onclick="toggleTagNote(this)">💬 One-sentence takeaway per student</span>
+              <div class="tag-note">"Tell me one thing you'll remember from today" — goes around the whole group.</div>
+            </div>
+            <div class="stage-detail" id="stage-detail-6">
+              <div class="highlight-box" style="background:#F0FDFA;">
+                <strong>Feedback template:</strong><br>
+                <span style="font-size: 13px; color: var(--muted);">
+                  <strong>🌟 What I loved:</strong> "Maria used 'double-edged sword' — completely natural, great job." <br>
+                  <strong>🔧 Let's fix this:</strong> "A few of us said 'I am agree' — it's just 'I agree', no 'am' needed." <br>
+                  <strong>💡 Vocabulary to remember:</strong> Write 3–5 words from today on the board.
+                </span>
+              </div>
+              <p class="mistake"><strong>⚠️ Common mistake:</strong> Skipping feedback because "there's no time." This stage closes the loop — students need it to feel the lesson was complete.</p>
             </div>
           </div>
           <div class="stage-time" style="background:#F0FDFA; color:#0F766E">3–5 min</div>
@@ -1314,116 +1489,125 @@
       <div class="section-header">
         <div class="icon-big" style="background:#FDF2F8">🗺️</div>
         <div>
-          <h2 style="color:#BE185D">Stage-by-Stage Guide</h2>
-          <p>Deep dive into each stage with real examples</p>
+          <h2 style="color:#BE185D">Sample Lessons</h2>
+          <p>Three full lessons, ready to teach, one per level</p>
         </div>
       </div>
 
       <div class="card">
-        <h3>Stage 1 — Warm-Up (1–2 min)</h3>
-        <p><strong>Goal:</strong> Check in with all students, explain the rules for the lesson. Quick and welcoming — just enough to settle everyone in.</p>
-        <div class="highlight-box" style="background:#EFF6FF; margin-top: 12px;">
-          <strong>Example:</strong><br>
-          <span style="font-size: 13px; color: var(--muted);">"Hi everyone! Great to see you all. Today we'll do Speaking Club — you know the drill: speak as much as you can, don't worry about mistakes, just go for it. Let's start!"</span>
-        </div>
-        <p style="margin-top: 12px; font-size: 13px; color: var(--muted);"><strong>⚠️ Common mistake:</strong> Turning warm-up into a long chat. Keep it to 1–2 minutes — save the energy for the discussion.</p>
-      </div>
+        <h3>Ready-to-Teach Examples</h3>
+        <p style="margin-bottom: 16px;">Each lesson follows the 6-stage framework end to end — topic, trigger, vocabulary, layered questions, pair task, and wrap-up. Click a level to open the full plan.</p>
 
-      <div class="card">
-        <h3>Stage 2 — Lead-In (3–5 min)</h3>
-        <p><strong>Goal:</strong> Introduce the topic and spark curiosity. Keep it learner-centered — brief intro, then immediately ask students what they think.</p>
-        <div class="highlight-box" style="background:#FFF7ED; margin-top: 12px;">
-          <strong>Script:</strong><br>
-          <span style="font-size: 13px; color: var(--muted);">"Today we're going to talk about [topic]. [Present trigger — quote / image / fact / scenario.] What do you think? What's your first reaction?"</span>
-        </div>
-        <p style="margin-top: 12px; font-size: 13px; color: var(--muted);"><strong>⚠️ Common mistake:</strong> Spending too long introducing the topic yourself. Present it, then pass the floor straight to students.</p>
-      </div>
+        <div class="lesson-card" id="lesson-1">
+          <button class="lesson-header" onclick="toggleLesson('lesson-1')">
+            <span class="lesson-level" style="background:#D1FAE5; color:#065F46;">A1–A2</span>
+            <span class="lesson-title">My Daily Routine vs. My Dream Day</span>
+            <span class="lesson-arrow">▶</span>
+          </button>
+          <div class="lesson-body">
+            <div class="lesson-divider"></div>
+            <div class="lesson-step-label">Trigger (Lead-In)</div>
+            <p style="font-size: 13.5px;">Show a picture: an alarm clock at 6am next to a beach chair. <em>"Which one is your life — and which one is your dream?"</em></p>
 
-      <div class="card">
-        <h3>Stage 3 — Pre-Teaching Vocabulary (6–8 min)</h3>
-        <p><strong>Goal:</strong> Equip students with the words they'll need for the discussion. Maximum 5–8 words or phrases.</p>
-        <p style="margin-top: 8px; font-size: 14px;">For each word, check three things:</p>
-        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <div style="background:#EDE9FE; color:#6D28D9; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Meaning</div>
-            <p style="font-size: 13px; color: var(--muted); margin: 0;">Concept check questions: "If someone is resilient, do they give up easily — yes or no?"</p>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <div style="background:#EDE9FE; color:#6D28D9; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Form</div>
-            <p style="font-size: 13px; color: var(--muted); margin: 0;">Is it a noun, verb, adjective? Countable or uncountable? "We say 'resilience' (noun) or 'resilient' (adjective)."</p>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <div style="background:#EDE9FE; color:#6D28D9; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Pronunciation</div>
-            <p style="font-size: 13px; color: var(--muted); margin: 0;">Model it, then drill it. "Repeat after me: re-SIL-ient. Everyone!"</p>
-          </div>
-        </div>
-        <p style="margin-top: 12px; font-size: 13px; color: var(--muted);"><strong>⚠️ Common mistake:</strong> Teaching 10+ words — students can't absorb them all. Stick to 5–8 max and make sure they actually use them in Stage 4.</p>
-      </div>
+            <div class="lesson-step-label">Pre-Teaching Vocabulary</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span class="tag" style="background:#D1FAE5; color:#065F46;">routine</span>
+              <span class="tag" style="background:#D1FAE5; color:#065F46;">exhausted</span>
+              <span class="tag" style="background:#D1FAE5; color:#065F46;">relaxing</span>
+              <span class="tag" style="background:#D1FAE5; color:#065F46;">schedule</span>
+              <span class="tag" style="background:#D1FAE5; color:#065F46;">free time</span>
+              <span class="tag" style="background:#D1FAE5; color:#065F46;">to wake up</span>
+            </div>
 
-      <div class="card">
-        <h3>Stage 4 — General Discussion (15–20 min)</h3>
-        <p><strong>Goal:</strong> Every student speaks equally. Use the pre-taught vocabulary in your questions and encourage students to use it in their answers.</p>
-        <p style="margin-top: 10px; font-size: 14px; margin-bottom: 12px;">Build questions in layers — from surface to depth:</p>
-        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <div style="background:#DBEAFE; color:#1D4ED8; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Layer 1</div>
-            <div><strong style="font-size: 13px;">Facts & Understanding</strong> <span style="font-size: 13px; color: var(--muted);">— "What does this mean?" · "What do you know about this?"</span></div>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <div style="background:#D1FAE5; color:#065F46; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Layer 2</div>
-            <div><strong style="font-size: 13px;">Opinions & Analysis</strong> <span style="font-size: 13px; color: var(--muted);">— "Do you agree? Why?" · "What are the pros and cons?"</span></div>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <div style="background:#FCE7F3; color:#BE185D; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; white-space: nowrap; margin-top: 2px;">Layer 3</div>
-            <div><strong style="font-size: 13px;">Personal Application</strong> <span style="font-size: 13px; color: var(--muted);">— "Has this happened to you?" · "How does this connect to your life?"</span></div>
-          </div>
-        </div>
-        <div class="highlight-box" style="background:#F0FDF4; margin-top: 4px;">
-          <strong style="color:#047857">When energy drops — pivot phrases:</strong><br>
-          <span style="font-size: 13px; color: var(--muted);">"Is that always true?" · "What's the opposite view?" · "Has your opinion changed?" · "What would you do differently?" · "Imagine you had to defend the other side…"</span>
-        </div>
-      </div>
+            <div class="lesson-step-label">General Discussion — layered questions</div>
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13.5px;">
+              <p style="margin:0;"><strong>Fact:</strong> What time do you usually wake up? What do you do first?</p>
+              <p style="margin:0;"><strong>Opinion:</strong> Is your daily routine boring or exciting? Why?</p>
+              <p style="margin:0;"><strong>Personal:</strong> If you could change one thing about your routine, what would it be?</p>
+            </div>
 
-      <div class="card">
-        <h3>Stage 5 — Discussion in Pairs / Project Work (15–20 min)</h3>
-        <p><strong>Goal:</strong> Students work independently in breakout rooms — prepare a task, then present back to the group.</p>
-        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-          <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
-            <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">1.</span>
-            <span>Divide into pairs (or threes if the number is odd). Always use breakout rooms — even with just 2–3 students.</span>
-          </div>
-          <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
-            <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">2.</span>
-            <span>Give them 10–12 minutes and a clear task: debate, project, role-play. <em>Example: "Group A — 5 arguments for AI in schools. Group B — 5 arguments against."</em></span>
-          </div>
-          <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
-            <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">3.</span>
-            <span>Give a reason to listen: "Take notes — you'll need to respond to the other group's arguments."</span>
-          </div>
-          <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
-            <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">4.</span>
-            <span>Monitor breakout rooms — give feedback, support, and ideas.</span>
-          </div>
-          <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px;">
-            <span style="color:#BE185D; font-weight: 700; flex-shrink: 0;">5.</span>
-            <span>Leave 6–7 minutes after breakout rooms for presentations and group discussion.</span>
-          </div>
-        </div>
-        <p style="margin-top: 12px; font-size: 13px; color: var(--muted);"><strong>⚠️ Common mistake:</strong> Skipping breakout rooms when the group is small. Even 2 students benefit from independent pair work — it changes the dynamic.</p>
-      </div>
+            <div class="lesson-step-label">Pairs / Project Work</div>
+            <p style="font-size: 13.5px;">Role-play — one student describes their real day, the partner describes their "dream day." Then they swap and guess which was true and which was the dream.</p>
 
-      <div class="card">
-        <h3>Stage 6 — Feedback &amp; Wrap-Up (3–5 min)</h3>
-        <p><strong>Goal:</strong> Summarize key takeaways, highlight common mistakes, and close on a positive note.</p>
-        <div class="highlight-box" style="background:#F0FDFA; margin-top: 12px;">
-          <strong>Feedback template:</strong><br>
-          <span style="font-size: 13px; color: var(--muted);">
-            <strong>🌟 What I loved:</strong> "Maria used 'double-edged sword' — completely natural, great job." <br>
-            <strong>🔧 Let's fix this:</strong> "A few of us said 'I am agree' — it's just 'I agree', no 'am' needed." <br>
-            <strong>💡 Vocabulary to remember:</strong> Write 3–5 words from today on the board.
-          </span>
+            <div class="lesson-step-label">Feedback &amp; Wrap-Up</div>
+            <p style="font-size: 13.5px;">Recap 3 new words (routine, exhausted, relaxing). One sentence per student: "My dream day would be…"</p>
+          </div>
         </div>
-        <p style="margin-top: 12px; font-size: 13px; color: var(--muted);"><strong>⚠️ Common mistake:</strong> Skipping feedback because "there's no time." This stage closes the loop — students need it to feel the lesson was complete.</p>
+
+        <div class="lesson-card" id="lesson-2">
+          <button class="lesson-header" onclick="toggleLesson('lesson-2')">
+            <span class="lesson-level" style="background:#FEF3C7; color:#92400E;">B1–B2</span>
+            <span class="lesson-title">Social Media — Connection or Isolation?</span>
+            <span class="lesson-arrow">▶</span>
+          </button>
+          <div class="lesson-body">
+            <div class="lesson-divider"></div>
+            <div class="lesson-step-label">Trigger (Lead-In)</div>
+            <p style="font-size: 13.5px;">Surprising fact: <em>"The average person spends 2.5 hours a day on social media — that's almost 40 days a year."</em> "Does that number surprise you?"</p>
+
+            <div class="lesson-step-label">Pre-Teaching Vocabulary</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span class="tag" style="background:#FEF3C7; color:#92400E;">isolation</span>
+              <span class="tag" style="background:#FEF3C7; color:#92400E;">addictive</span>
+              <span class="tag" style="background:#FEF3C7; color:#92400E;">authentic</span>
+              <span class="tag" style="background:#FEF3C7; color:#92400E;">comparison</span>
+              <span class="tag" style="background:#FEF3C7; color:#92400E;">validation</span>
+              <span class="tag" style="background:#FEF3C7; color:#92400E;">to scroll</span>
+              <span class="tag" style="background:#FEF3C7; color:#92400E;">overwhelmed</span>
+            </div>
+
+            <div class="lesson-step-label">General Discussion — layered questions</div>
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13.5px;">
+              <p style="margin:0;"><strong>Fact:</strong> How many hours a day do you think you spend on social media?</p>
+              <p style="margin:0;"><strong>Opinion:</strong> Does social media bring people closer or push them apart?</p>
+              <p style="margin:0;"><strong>Personal:</strong> Have you ever felt worse about yourself after scrolling? What happened?</p>
+            </div>
+
+            <div class="lesson-step-label">Pairs / Project Work</div>
+            <p style="font-size: 13.5px;">Debate — for vs. against: <em>"Should social media have an age limit of 16?"</em> 10–12 minutes to prepare arguments, 6–7 minutes for the mini-debate.</p>
+
+            <div class="lesson-step-label">Feedback &amp; Wrap-Up</div>
+            <p style="font-size: 13.5px;">One student summarizes the best argument from the side they didn't choose — checks that they were actually listening to the opponent.</p>
+          </div>
+        </div>
+
+        <div class="lesson-card" id="lesson-3">
+          <button class="lesson-header" onclick="toggleLesson('lesson-3')">
+            <span class="lesson-level" style="background:#FCE7F3; color:#BE185D;">C1–C2</span>
+            <span class="lesson-title">Should AI Have Rights?</span>
+            <span class="lesson-arrow">▶</span>
+          </button>
+          <div class="lesson-body">
+            <div class="lesson-divider"></div>
+            <div class="lesson-step-label">Trigger (Lead-In)</div>
+            <p style="font-size: 13.5px;">Hot take: <em>"If an AI can convincingly say it's suffering, we have a moral obligation to believe it."</em> "Agree or disagree — and why?"</p>
+
+            <div class="lesson-step-label">Pre-Teaching Vocabulary</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span class="tag" style="background:#FCE7F3; color:#BE185D;">sentience</span>
+              <span class="tag" style="background:#FCE7F3; color:#BE185D;">moral obligation</span>
+              <span class="tag" style="background:#FCE7F3; color:#BE185D;">consciousness</span>
+              <span class="tag" style="background:#FCE7F3; color:#BE185D;">to anthropomorphize</span>
+              <span class="tag" style="background:#FCE7F3; color:#BE185D;">ethical dilemma</span>
+              <span class="tag" style="background:#FCE7F3; color:#BE185D;">autonomy</span>
+              <span class="tag" style="background:#FCE7F3; color:#BE185D;">exploitation</span>
+              <span class="tag" style="background:#FCE7F3; color:#BE185D;">philosophical paradox</span>
+            </div>
+
+            <div class="lesson-step-label">General Discussion — layered questions</div>
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13.5px;">
+              <p style="margin:0;"><strong>Fact:</strong> What's the difference between intelligence and consciousness?</p>
+              <p style="margin:0;"><strong>Opinion:</strong> Is it possible for a machine to genuinely suffer, or only to simulate suffering convincingly?</p>
+              <p style="margin:0;"><strong>Personal:</strong> Has a conversation with an AI ever felt genuinely "real" to you? What made it feel that way — or not?</p>
+            </div>
+
+            <div class="lesson-step-label">Pairs / Project Work</div>
+            <p style="font-size: 13.5px;">Mini project — each pair prepares a 2-minute presentation: "If AI rights existed in 2035, what would the first law say?" They present, the group asks one clarifying question each.</p>
+
+            <div class="lesson-step-label">Feedback &amp; Wrap-Up</div>
+            <p style="font-size: 13.5px;">Peer feedback — each student names one idea from another presentation that changed their mind (or strengthened it).</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -2605,7 +2789,7 @@ function showModule(num) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('module-' + num).classList.add('active');
   document.querySelectorAll('.nav-item').forEach((n,i) => n.classList.toggle('active', i === num));
-  const titles = ['','What Is a Speaking Club?','The Problem','Structure & Timing','Live Triggers','Stage-by-Stage Guide','Tools & Resources','Lesson Planner','Emergency FAQ','Group Management','Training & Tests'];
+  const titles = ['','What Is a Speaking Club?','Lesson Structure & Timing','Live Triggers','Sample Lessons','Why Structure + Spark','Tools & Resources','AI Lesson Planner','Emergency FAQ','Group Management','Training & Tests'];
   document.getElementById('topbar-title').textContent = titles[num];
   closeSidebar();
   window.scrollTo(0,0);
@@ -2624,6 +2808,25 @@ function toggleSt(id) {
   const el = document.getElementById(id);
   const wasOpen = el.classList.contains('open');
   document.querySelectorAll('.student-type.open').forEach(s => s.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+
+function toggleStage(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function toggleTagNote(el, e) {
+  if (e) e.stopPropagation();
+  const note = el.nextElementSibling;
+  if (!note || !note.classList.contains('tag-note')) return;
+  note.classList.toggle('open');
+}
+
+function toggleLesson(id) {
+  const el = document.getElementById(id);
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.lesson-card.open').forEach(s => s.classList.remove('open'));
   if (!wasOpen) el.classList.add('open');
 }
 
@@ -3394,7 +3597,7 @@ const TEST_QUESTIONS = [
       'Never — mistakes are completely ignored'
     ],
     correct: 2,
-    module: 'Stage-by-Stage Guide'
+    module: 'Structure & Timing'
   },
   {
     q: 'What is the main purpose of a "trigger" in a Speaking Club lesson?',
@@ -3427,7 +3630,7 @@ const TEST_QUESTIONS = [
       'Translate difficult words into Ukrainian'
     ],
     correct: 2,
-    module: 'Stage-by-Stage Guide'
+    module: 'Structure & Timing'
   },
   {
     q: 'Which behaviour describes the "Silent One" student type?',
@@ -3480,7 +3683,7 @@ const TEST_QUESTIONS = [
     q: 'How do you make sure all students get equal speaking time? Give a specific example from one of your actual lessons.',
     placeholder: 'Write your answer here... (minimum 20 words)',
     minWords: 20,
-    module: 'Stage-by-Stage Guide'
+    module: 'Structure & Timing'
   },
   {
     type: 'open',
@@ -3511,7 +3714,7 @@ const TEST_RECOMMENDATIONS = {
     bg: '#EFF6FF',
     border: '#3B82F6',
     reco: [
-      'Review the Stage-by-Stage Guide (Module 5) to strengthen your timing instincts.',
+      'Review the Lesson Structure & Timing guide (Module 2) to strengthen your timing instincts.',
       'Practice the Feedback stage format — it\'s easy to skip or rush.',
       'Re-read the Live Triggers module and try using a different trigger type each lesson.'
     ]
@@ -3523,8 +3726,8 @@ const TEST_RECOMMENDATIONS = {
     bg: '#FFFBEB',
     border: '#F59E0B',
     reco: [
-      'Re-read Structure & Timing (Module 3) — timing is the foundation of every lesson.',
-      'Study the Stage-by-Stage Guide carefully, especially error correction rules.',
+      'Re-read Lesson Structure & Timing (Module 2) — timing is the foundation of every lesson.',
+      'Study the stage-by-stage details inside it carefully, especially error correction rules.',
       'Work through all 10 Emergency FAQ scenarios before your next lesson.',
       'Ask a colleague or admin to observe one of your lessons and give feedback.'
     ]

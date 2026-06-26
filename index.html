@@ -642,6 +642,45 @@
   .test-card.done .test-card-icon { background: #F0FDF4; }
   .test-done-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: #D1FAE5; color: #065F46; }
 
+  /* ── MODULE 10: TESTS / WORKSHOPS TAB TOGGLE ── */
+  .module10-tabs { display: flex; gap: 8px; margin-bottom: 28px; }
+  .module10-tab {
+    padding: 9px 18px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: white; color: var(--muted); font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .module10-tab:hover { border-color: var(--blue); color: var(--text); }
+  .module10-tab.active { background: var(--blue); border-color: var(--blue); color: white; }
+
+  /* ── WORKSHOPS ── */
+  .workshop-slides-wrap { position: relative; width: 100%; padding-top: 60%; border-radius: 14px; overflow: hidden; border: 1.5px solid var(--border); margin-bottom: 10px; }
+  .workshop-slides-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+
+  .wtask-card {
+    border: 1.5px solid var(--border); border-radius: 14px;
+    margin-bottom: 12px; overflow: hidden; transition: box-shadow .2s; background: white;
+  }
+  .wtask-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+  .wtask-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; cursor: pointer; background: none;
+    border: none; width: 100%; text-align: left; font-family: inherit;
+    transition: background .15s;
+  }
+  .wtask-header:hover { background: var(--bg); }
+  .wtask-title { font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
+  .wtask-arrow { font-size: 13px; color: var(--muted); flex-shrink: 0; transition: transform .2s; }
+  .wtask-card.open .wtask-arrow { transform: rotate(90deg); }
+  .wtask-body { display: none; padding: 4px 20px 22px; }
+  .wtask-card.open .wtask-body { display: block; animation: fadeIn .25s ease; }
+  .wtask-divider { height: 1px; background: var(--border); margin: 0 0 18px; }
+  .wtask-intro { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+  .wtask-stage { border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .wtask-stage-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--blue); margin-bottom: 8px; }
+  .wtask-script { font-size: 13px; color: var(--text); line-height: 1.7; background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-style: italic; }
+  .wtask-technique { font-size: 13px; color: var(--text); line-height: 1.6; }
+  .wtask-technique strong { color: #1D4ED8; }
+
   .test-progress-bar { height: 6px; background: #E5E7EB; border-radius: 100px; margin-bottom: 32px; overflow: hidden; }
   .test-progress-fill { height: 100%; background: var(--blue); border-radius: 100px; transition: width .4s ease; }
   .test-question-num { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
@@ -2652,6 +2691,13 @@
         </div>
       </div>
 
+      <div class="module10-tabs">
+        <button class="module10-tab active" id="module10-tab-tests-btn" onclick="switchModule10Tab('tests')">Tests</button>
+        <button class="module10-tab" id="module10-tab-workshops-btn" onclick="switchModule10Tab('workshops')">Workshops</button>
+      </div>
+
+      <div id="module10-tests-content">
+
       <!-- SCREEN 1: Sign in required -->
       <div class="test-screen active" id="test-screen-register">
         <div style="max-width:420px;margin:40px auto 0;text-align:center;">
@@ -2792,6 +2838,140 @@
         <div id="teacher-review-list"></div>
       </div>
 
+      </div>
+      <!-- ── WORKSHOPS TAB ── -->
+      <div id="module10-workshops-content" style="display:none;">
+
+        <div class="test-list" id="workshop-list-screen">
+          <div class="test-card" id="workshop-card-1" onclick="showWorkshop(1)">
+            <div class="test-card-icon" style="background:#FFFBEB;">🎓</div>
+            <div class="test-card-info">
+              <h3>The Art of Flexible Speaking Club Teaching</h3>
+              <p>Structure as a skeleton, the Flexibility Map, and the "Yes, And..." principle — slides + practical tasks</p>
+              <div class="test-card-meta">
+                <span class="test-meta-tag">Presentation</span>
+                <span class="test-meta-tag">3 practical tasks</span>
+              </div>
+            </div>
+            <span class="test-card-arrow">→</span>
+          </div>
+        </div>
+
+        <div id="workshop-detail-1" style="display:none;">
+          <button class="back-btn" onclick="backToWorkshopList()">← Back to workshops</button>
+          <h2 style="font-size:20px;font-weight:800;margin-bottom:16px;">The Art of Flexible Speaking Club Teaching</h2>
+
+          <div class="workshop-slides-wrap">
+            <iframe src="https://docs.google.com/presentation/d/1c7arCD7J1-zGJhPuukrFoUqwhz2IRdgeFsvm4oObzeM/embed?start=false&loop=false&delayms=3000" allowfullscreen></iframe>
+          </div>
+
+          <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:28px 0 14px;">Practical tasks</div>
+
+          <!-- Task 1: Before/After Lab -->
+          <div class="wtask-card" id="wtask-1">
+            <button class="wtask-header" onclick="toggleWorkshopTask('wtask-1')">
+              <span class="wtask-title">Before/After Lab</span>
+              <span class="wtask-arrow">▶</span>
+            </button>
+            <div class="wtask-body">
+              <div class="wtask-divider"></div>
+              <p class="wtask-intro">Pick one of the four "autopilot" scripts below. Read it out loud exactly as written, choose ONE technique from its toolbox, and rewrite the line using that technique — same teaching goal, different energy.</p>
+
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Warm-up</div>
+                <div class="wtask-script">Teacher: "Hello everyone, how are you today?"<br>Students: "Good, thank you."<br>Teacher: "Great. Let's check the homework, and then we'll start today's lesson."</div>
+                <div class="wtask-technique"><strong>Toolbox — Hot Take / Quick Poll:</strong> Open with a bold, debatable statement instead of "How are you?" ("Working from home is overrated — agree or disagree?"), or get instant interaction with a show of hands or a 1-to-10 rating ("Rate your week so far, 1 to 10").</div>
+              </div>
+
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Vocabulary</div>
+                <div class="wtask-script">Teacher: "Repeat after me: 'itinerary'."<br>Students: "Itinerary."<br>Teacher: "Good. Who can tell me what this word means?"<br>Student: "…a plan for a trip?"<br>Teacher: "Almost — it's a detailed plan for a journey. Next word."</div>
+                <div class="wtask-technique"><strong>Toolbox — Real-Life Context:</strong> Instead of a dictionary definition, give the meaning through a moment from your OWN life ("I actually said this word to my landlord last month…").</div>
+              </div>
+
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Discussion</div>
+                <div class="wtask-script">Teacher: "What do you think about social media?"<br>Student: "I think it's both good and bad."<br>Teacher: "OK. Next question — do you use Instagram?"</div>
+                <div class="wtask-technique"><strong>Toolbox — React, Build, Call Back (Yes, And…):</strong> Acknowledge what they actually said, ask a genuine follow-up, and later refer back to it ("Wait — you said it's addictive. Would you survive a week without it?").</div>
+              </div>
+
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Feedback</div>
+                <div class="wtask-script">Teacher: "You made a mistake. Remember — we say 'did', not 'done', after 'I'."</div>
+                <div class="wtask-technique"><strong>Toolbox — Remembered Detail:</strong> Connect the correction to something personal you remember about the student ("Since you're into IT — think of it like debugging: 'did', not 'done', is the right syntax here.").</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Task 2: Yes-And Drill -->
+          <div class="wtask-card" id="wtask-2">
+            <button class="wtask-header" onclick="toggleWorkshopTask('wtask-2')">
+              <span class="wtask-title">Yes-And Drill</span>
+              <span class="wtask-arrow">▶</span>
+            </button>
+            <div class="wtask-body">
+              <div class="wtask-divider"></div>
+              <p class="wtask-intro">Work in pairs. One person plays the "student" and reads the unexpected answer below. The other practises Yes, And… — acknowledge what they said, react genuinely, then redirect with a follow-up question. Swap roles after each prompt.</div>
+
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Prompt 1</div>
+                <div class="wtask-script">Teacher asks: "What did you do last weekend?"<br>Student (unexpected): "I taught my cat to high-five."</div>
+              </div>
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Prompt 2</div>
+                <div class="wtask-script">Teacher asks: "What's your favourite food?"<br>Student (unexpected): "Honestly, I don't really enjoy eating. I just do it because I have to."</div>
+              </div>
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Prompt 3</div>
+                <div class="wtask-script">Teacher asks: "Do you like your job?"<br>Student (unexpected): "I quit yesterday. I have no idea what I'm doing next."</div>
+              </div>
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Prompt 4</div>
+                <div class="wtask-script">Teacher asks: "What are your plans for the holidays?"<br>Student (unexpected): "I'm going off-grid for two weeks — no phone, no internet."</div>
+              </div>
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Prompt 5</div>
+                <div class="wtask-script">Teacher asks: "Do you use social media a lot?"<br>Student (unexpected): "I deleted all my accounts last year, and I've never been happier."</div>
+              </div>
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Prompt 6</div>
+                <div class="wtask-script">Teacher asks: "What's a skill you'd like to learn?"<br>Student (unexpected): "Honestly? I want to learn how to just disappear for a while."</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Task 3: Case Clinic -->
+          <div class="wtask-card" id="wtask-3">
+            <button class="wtask-header" onclick="toggleWorkshopTask('wtask-3')">
+              <span class="wtask-title">Case Clinic</span>
+              <span class="wtask-arrow">▶</span>
+            </button>
+            <div class="wtask-body">
+              <div class="wtask-divider"></div>
+              <p class="wtask-intro">Read each transcript. Identify the stage (Warm-up / Vocabulary / Discussion / Feedback), name the "on autopilot" pattern you notice, and propose ONE fix from the Flexibility Map.</p>
+
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Case File #1</div>
+                <div class="wtask-script">Teacher: "Hi guys. Today we'll talk about technology. Did everyone do the homework?"<br>Students: "Yes."<br>Teacher: "Great, let's begin."</div>
+              </div>
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Case File #2</div>
+                <div class="wtask-script">Teacher: "OK, next word: 'commute'. Does anyone know what it means?"<br>Student: "Going to work?"<br>Teacher: "Yes, basically. Next word: 'colleague'."</div>
+              </div>
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Case File #3</div>
+                <div class="wtask-script">Teacher: "Do you prefer working from home or the office?"<br>Student: "I prefer home, it's more comfortable."<br>Teacher: "OK. And you — do you like remote work?"</div>
+              </div>
+              <div class="wtask-stage">
+                <div class="wtask-stage-label">Case File #4</div>
+                <div class="wtask-script">Teacher: "Good job today. Just remember: it's 'went', not 'goed'. See you next time."</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </section>
 
   </div>
@@ -2849,7 +3029,7 @@ function showModule(num) {
   document.getElementById('topbar-title').textContent = titles[num];
   closeSidebar();
   window.scrollTo(0,0);
-  if (num === 10) testInitModule();
+  if (num === 10) { switchModule10Tab('tests'); testInitModule(); }
 }
 
 // ── FAQ & Student Type Accordions ────────────────────────────
@@ -2883,6 +3063,31 @@ function toggleLesson(id) {
   const el = document.getElementById(id);
   const wasOpen = el.classList.contains('open');
   document.querySelectorAll('.lesson-card.open').forEach(s => s.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+
+// ── Module 10: Tests / Workshops tab toggle ──────────────────
+function switchModule10Tab(tab) {
+  document.getElementById('module10-tests-content').style.display = tab === 'tests' ? 'block' : 'none';
+  document.getElementById('module10-workshops-content').style.display = tab === 'workshops' ? 'block' : 'none';
+  document.getElementById('module10-tab-tests-btn').classList.toggle('active', tab === 'tests');
+  document.getElementById('module10-tab-workshops-btn').classList.toggle('active', tab === 'workshops');
+}
+
+function showWorkshop(id) {
+  document.getElementById('workshop-list-screen').style.display = 'none';
+  document.getElementById('workshop-detail-' + id).style.display = 'block';
+}
+
+function backToWorkshopList() {
+  document.querySelectorAll('#module10-workshops-content > div[id^="workshop-detail-"]').forEach(d => d.style.display = 'none');
+  document.getElementById('workshop-list-screen').style.display = 'flex';
+}
+
+function toggleWorkshopTask(id) {
+  const el = document.getElementById(id);
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.wtask-card.open').forEach(s => s.classList.remove('open'));
   if (!wasOpen) el.classList.add('open');
 }
 

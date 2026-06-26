@@ -286,8 +286,9 @@
   .stage-purpose { font-size: 12.5px; color: var(--muted); margin: 4px 0 0; font-style: italic; }
   .stage-toggle-arrow { font-size: 11px; color: var(--muted); transition: transform .2s; flex-shrink: 0; }
   .stage.open .stage-toggle-arrow { transform: rotate(90deg); }
-  .tag { cursor: pointer; transition: filter .15s; }
-  .tag:hover { filter: brightness(.95); }
+  .tag[onclick] { cursor: pointer; transition: filter .15s; }
+  .tag[onclick]:hover { filter: brightness(.95); }
+  .tag[onclick]::after { content: " \203a"; font-weight: 700; }
   .tag-note {
     display: none; font-size: 12.5px; color: var(--muted);
     background: var(--bg); border-radius: 8px; padding: 8px 12px;
@@ -955,9 +956,6 @@
           <li><span class="check">✓</span> Protect the flow — never interrupt a student mid-thought to correct an error</li>
           <li><span class="check">✓</span> Reserve all language feedback for the dedicated wrap-up stage at the end</li>
         </ul>
-        <div class="highlight-box" style="background:#EFF6FF; margin-top: 16px;">
-          <strong style="color:#1D4ED8">You'll know it's working when</strong> the conversation runs without you — students talk to each other, and you're mostly listening.
-        </div>
       </div>
 
       <div class="card">
@@ -1093,7 +1091,7 @@
             <p class="stage-purpose">Purpose: settle the group and set a relaxed tone before real speaking starts.</p>
             <p>Check in all students and explain the rules for the lesson. Quick and welcoming — sets the tone.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Tap for examples:</span>
               <span class="tag" style="background:#EFF6FF; color:#1D4ED8" onclick="toggleTagNote(this)">👋 Quick check-in question</span>
               <div class="tag-note">"Hey everyone! How's it going today — good week?"</div>
               <span class="tag" style="background:#EFF6FF; color:#1D4ED8" onclick="toggleTagNote(this)">💬 "One word about your week"</span>
@@ -1123,7 +1121,7 @@
             <p class="stage-purpose">Purpose: hook attention and hand the floor to students immediately.</p>
             <p>A general question or introduction to the topic. Start learner-centered — brief intro, then pass the floor. Ensure it connects to the session theme.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Tap for examples:</span>
               <span class="tag" style="background:#FFF7ED; color:#C2410C" onclick="toggleTagNote(this)">✨ Trigger (quote / fact / scenario / hot take)</span>
               <div class="tag-note">Present it, then immediately ask: "What's your first reaction?"</div>
               <span class="tag" style="background:#FFF7ED; color:#C2410C" onclick="toggleTagNote(this)">🖼️ Image or video hook</span>
@@ -1153,7 +1151,7 @@
             <p class="stage-purpose">Purpose: remove the language barrier before students need these words.</p>
             <p>Max 5–8 words or phrases. Check meaning, form (noun/adjective, countable/uncountable), and pronunciation. Ask follow-up questions to confirm understanding.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Tap for examples:</span>
               <span class="tag" style="background:#F5F3FF; color:#6D28D9" onclick="toggleTagNote(this)">🔤 Guess from context</span>
               <div class="tag-note">Give a sentence with the word blanked out; students guess the meaning before you confirm it.</div>
               <span class="tag" style="background:#F5F3FF; color:#6D28D9" onclick="toggleTagNote(this)">🔊 Pronunciation drill</span>
@@ -1196,7 +1194,7 @@
             <p class="stage-purpose">Purpose: the core of the lesson — equal airtime for everyone, growing depth.</p>
             <p>Goal: every student gets equal speaking time. Use pre-taught vocabulary in questions, encourage students to use it in answers. Manage time based on group size — the bigger the group, the less time per student, so plan turns before you start.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Tap for examples:</span>
               <span class="tag" style="background:#F0FDF4; color:#047857" onclick="toggleTagNote(this)">🎯 Layered questions (facts → opinions → personal)</span>
               <div class="tag-note">Start with "what," move to "why," end with "you" — see the full breakdown below.</div>
               <span class="tag" style="background:#F0FDF4; color:#047857" onclick="toggleTagNote(this)">⏱️ Phone timer per student</span>
@@ -1242,7 +1240,7 @@
             <p class="stage-purpose">Purpose: independent work where every student must produce language, not just listen.</p>
             <p>Breakout rooms in pairs (or threes if needed). Prep time 10–12 min, then 6–7 min for presentations. Assign task: debate, project, role-play. Give students a reason to listen (notes, summary).</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Tap for examples:</span>
               <span class="tag" style="background:#FDF2F8; color:#BE185D" onclick="toggleTagNote(this)">⚔️ Debate (for vs. against)</span>
               <div class="tag-note">Split the group, assign sides, 10 min to build arguments before presenting.</div>
               <span class="tag" style="background:#FDF2F8; color:#BE185D" onclick="toggleTagNote(this)">🎭 Role-play scenario</span>
@@ -1292,7 +1290,7 @@
             <p class="stage-purpose">Purpose: close the loop so students feel the lesson was complete.</p>
             <p>Summarize key takeaways. Highlight common mistakes and offer corrections. Keep it positive and forward-looking.</p>
             <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Interactive:</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 2px;">Tap for examples:</span>
               <span class="tag" style="background:#F0FDFA; color:#0F766E" onclick="toggleTagNote(this)">📋 Error correction board</span>
               <div class="tag-note">Write 2–3 recurring mistakes on screen and correct them together as a group.</div>
               <span class="tag" style="background:#F0FDFA; color:#0F766E" onclick="toggleTagNote(this)">🏆 Vocabulary recap (3–5 words)</span>
@@ -1339,7 +1337,7 @@
       </div>
 
       <div class="card">
-        <h3>7 Types of Triggers</h3>
+        <h3>8 Types of Triggers</h3>
         <p style="font-size:13px;color:var(--muted);margin-top:4px;">Click any card to see examples by level</p>
         <div class="trigger-grid">
           <div class="trigger-type" onclick="showTriggerExamples('quote')">
@@ -1382,6 +1380,12 @@
             <div class="t-icon">🔥</div>
             <h4>Hot Take / Unpopular Opinion</h4>
             <p>A statement that most people would disagree with. Forces students to take a position and argue. High energy, high engagement.</p>
+            <div class="see-examples">See examples by level →</div>
+          </div>
+          <div class="trigger-type" onclick="showTriggerExamples('ranking')">
+            <div class="t-icon">🏆</div>
+            <h4>Ranking / Priority List</h4>
+            <p>Give students 4–6 items to rank by importance, value, or preference. Comparing rankings naturally sparks justification and disagreement.</p>
             <div class="see-examples">See examples by level →</div>
           </div>
         </div>
@@ -1632,12 +1636,35 @@
           <li><span class="check">✓</span> I have a clear trigger (not just a "topic")</li>
           <li><span class="check">✓</span> My trigger has no "right answer"</li>
           <li><span class="check">✓</span> I have Layer 1, 2, and 3 questions prepared</li>
-          <li><span class="check">✓</span> I know the group size and have calculated speaking time</li>
           <li><span class="check">✓</span> I have 3 pivot phrases ready in case energy drops</li>
           <li><span class="check">✓</span> I know 3–5 vocabulary items I want to introduce or highlight</li>
           <li><span class="check">✓</span> I have a 1-sentence closing thought for the wrap-up</li>
-          <li><span class="check">✓</span> I know which student might dominate and have a strategy to manage it</li>
         </ul>
+      </div>
+
+      <div class="card">
+        <h3>⏱️ Speaking Club Timer</h3>
+        <p style="margin-bottom: 16px;">A floating timer overlay for Google Slides, built specifically for Speaking Club lessons — visible to everyone, no app-switching needed.</p>
+        <a href="assets/speaking-club-timer.zip" download class="btn btn-primary" style="display:inline-block; text-decoration:none;">⬇️ Download Timer (.zip)</a>
+
+        <div style="margin-top: 20px;">
+          <p style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px;">How to install (Chrome, Edge, Brave — same steps for all):</p>
+          <ol style="font-size: 13.5px; color: var(--muted); padding-left: 20px; line-height: 1.7;">
+            <li>Download the file above and unzip it.</li>
+            <li>Open <code>chrome://extensions</code> in your browser.</li>
+            <li>Turn on <strong>Developer mode</strong> (top-right toggle).</li>
+            <li>Click <strong>Load unpacked</strong> and select the unzipped folder.</li>
+            <li>Open any Google Slides presentation — the timer icon appears in your toolbar.</li>
+          </ol>
+          <p style="font-size: 12px; color: var(--muted); margin-top: 8px;"><strong>⚠️ Not available for Safari or Firefox</strong> — those browsers need a different extension format.</p>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <p style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px;">Watch the installation video:</p>
+          <div style="position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; border: 1px solid var(--border);">
+            <iframe src="https://drive.google.com/file/d/1eGvBR8jUnHBrmbP12lDcyovmu_H7M52W/preview" style="position: absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay" allowfullscreen></iframe>
+          </div>
+        </div>
       </div>
 
       <div class="card">
@@ -1684,8 +1711,8 @@
             <strong>L1 Q:</strong> "Do you like...?"<br>
             <strong>L2 Q:</strong> "Why / why not?"<br>
             <strong>L3 Q:</strong> "In your family / city?"<br>
-            <strong>Vocab focus:</strong> 3 words max<br>
-            <strong>Correction:</strong> Gentle, immediate</p>
+            <strong>Vocab focus:</strong> 5–6 simple, high-frequency words<br>
+            <strong>Correction:</strong> Gentle, at the end</p>
           </div>
           <div class="level-card">
             <span class="lvl-badge" style="background:#D1FAE5; color:#065F46">B1–B2</span>
@@ -1705,7 +1732,7 @@
             <strong>L2 Q:</strong> "What's the counter-argument?"<br>
             <strong>L3 Q:</strong> "How does this affect your decisions?"<br>
             <strong>Vocab focus:</strong> Idioms + collocations<br>
-            <strong>Correction:</strong> Real-time precision</p>
+            <strong>Correction:</strong> Precise, at the end</p>
           </div>
         </div>
       </div>
@@ -2536,7 +2563,7 @@
         <p style="margin-bottom:20px;">Equal speaking time is an equity issue, not just a methodology preference. These tools make it structural, not something that depends on the teacher's attention in the moment.</p>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
           <div class="highlight-box" style="background:#EFF6FF; margin:0;">
-            <strong style="color:#1D4ED8; display:block; margin-bottom:6px;">📱 Phone Timer (most effective)</strong>
+            <strong style="color:#1D4ED8; display:block; margin-bottom:6px;">⏱️ Timer (most effective)</strong>
             <span style="font-size:13px; color:var(--muted);">Share your screen and show a visible countdown. Announce: "2 minutes each — I'll say next when time is up." No one can argue with a timer. The structure makes it fair, not the teacher.</span>
           </div>
           <div class="highlight-box" style="background:#F0FDF4; margin:0;">
@@ -3063,6 +3090,33 @@ const triggerExamples = {
     c1:  [
       { text: '"Democracy is an outdated system. In a complex, data-rich world, technocracy — government by experts — would produce objectively better outcomes." 👉 Is "better outcomes" even a coherent concept without democratic input?', tip: 'Challenges political fundamentals. Students must define terms precisely — classic C1 territory.' },
       { text: '"Empathy, not reason, is the most dangerous force in modern politics. It causes us to favour the identifiable victim over statistical millions." 👉 Can you construct a counter-argument? Is this view coherent?', tip: 'Abstract psychological claim demands meta-cognitive engagement — C1–C2 analytical speaking.' },
+    ],
+  },
+  ranking: {
+    icon: '🏆', title: 'Ranking / Priority List',
+    a1:  [
+      { text: 'Rank these from most to least important for a happy day: sleep, food, music, friends, sunshine. 👉 What\'s #1 for you?', tip: 'Simple, concrete items everyone has an opinion on — easy first ranking task.' },
+      { text: 'Rank these animals from cutest to least cute: dog, cat, rabbit, snake, spider. 👉 Why is your #1 the cutest?', tip: 'Visual, low-vocabulary topic with an instant personal reaction.' },
+    ],
+    a2:  [
+      { text: 'Rank these by how much free time they need: reading, watching TV, exercising, cooking, sleeping. 👉 Which one do you have the least time for?', tip: 'Daily-life vocabulary students already know — easy to justify with simple reasons.' },
+      { text: 'Rank these holidays from best to worst: New Year, birthday, summer holidays, weekend. 👉 Why did you put your #1 first?', tip: 'Familiar, positive topic that invites quick personal justification.' },
+    ],
+    b1m: [
+      { text: 'Rank these qualities in a good friend: honesty, humor, loyalty, intelligence, kindness. 👉 Could you be friends with someone missing your #1 quality?', tip: 'Abstract qualities push slightly beyond concrete vocabulary while staying personal.' },
+      { text: 'Rank these from most to least stressful: public speaking, exams, job interviews, flying. 👉 Compare your list with a partner — where do you disagree?', tip: 'Built-in comparison step naturally creates peer-to-peer talk, not just teacher Q&A.' },
+    ],
+    b1:  [
+      { text: 'Rank these from most to least important for success: hard work, talent, luck, connections, education. 👉 Defend your #1 — what\'s your evidence?', tip: 'Forces students to argue for a position, not just state an opinion.' },
+      { text: 'Rank these life decisions by difficulty: choosing a career, choosing a partner, moving abroad, having children. 👉 Why is your #1 the hardest?', tip: 'Personal and reflective — strong material for B1–B2 storytelling.' },
+    ],
+    b2:  [
+      { text: 'Rank these by how much they threaten society: climate change, AI, inequality, misinformation, war. 👉 Justify your #1 — what makes it more urgent than the others?', tip: 'Current, debatable issues that demand nuanced reasoning at B2.' },
+      { text: 'Rank these values when they conflict: freedom, security, equality, privacy, progress. 👉 Which would you sacrifice first, and why?', tip: 'Abstract trade-offs push students toward more sophisticated argumentative language.' },
+    ],
+    c1:  [
+      { text: 'Rank these by how much they should influence laws: tradition, public opinion, scientific evidence, religious belief, economic impact. 👉 Defend your ranking against someone who disagrees.', tip: 'Forces precise definitions and sustained argument — genuine C1 debate territory.' },
+      { text: 'Rank these as causes of modern loneliness: social media, urbanization, individualism, weakened family structures, work culture. 👉 Which ranking would a sociologist challenge, and how?', tip: 'Systemic, multi-causal thinking demands advanced hedging and academic-style language.' },
     ],
   },
 };

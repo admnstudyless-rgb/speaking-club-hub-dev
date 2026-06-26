@@ -2678,12 +2678,12 @@
           <div class="test-card" id="test-card-1" onclick="testStart(1)">
             <div class="test-card-icon">📚</div>
             <div class="test-card-info">
-              <h3>Speaking Club Basics</h3>
-              <p>Structure, timing, triggers, error correction, teacher's role</p>
+              <h3>Structure + Soul — Workshop Comprehension Check</h3>
+              <p>Structure as a skeleton, the teacher's highest-leverage moment, "Yes, And...", the Personalisation Toolkit</p>
               <div class="test-card-meta">
-                <span class="test-meta-tag">10 choice questions</span>
-                <span class="test-meta-tag">3 open questions</span>
-                <span class="test-meta-tag">~15 min</span>
+                <span class="test-meta-tag">15 choice questions</span>
+                <span class="test-meta-tag">5 fill-in-the-blank</span>
+                <span class="test-meta-tag">~10 min</span>
               </div>
             </div>
             <span class="test-card-arrow">→</span>
@@ -2704,6 +2704,7 @@
         <div id="test-admin-btn-wrap" style="display:none;margin-top:24px;">
           <div style="text-align:center;margin-bottom:12px;">
             <button onclick="testShowAdmin()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">View all results (admin)</button>
+            <button onclick="adminDownloadCSV()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;margin-left:14px;">Download results (CSV)</button>
           </div>
           <div style="background:#F8FAFF;border:1.5px solid #E0E7FF;border-radius:12px;padding:14px 16px;">
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6B7280;margin-bottom:10px;">Send notification to all teachers</div>
@@ -3740,136 +3741,187 @@ const fallback = [
 }
 
 // ── Testing Platform ──────────────────────────────────────────
+const ADMIN_EMAILS = ['admnstudyless@gmail.com', 'studyless.t9r@gmail.com'];
+const WORKSHOP_MODULE = 'Structure + Soul Workshop';
 const TEST_QUESTIONS = [
   {
-    q: 'What is the maximum group size for a Study Less Speaking Club?',
-    options: ['5 students', '8 students', '12 students', '15 students'],
-    correct: 1,
-    module: 'Structure & Timing'
-  },
-  {
-    q: 'How long is the Ice Breaker (warm-up) stage at the start of the lesson?',
-    options: ['3–5 minutes', '7–10 minutes', '15 minutes', '20 minutes'],
-    correct: 1,
-    module: 'Structure & Timing'
-  },
-  {
-    q: 'When should the teacher correct student mistakes?',
+    q: 'According to the workshop, which of these is already working well in the speaking club lessons?',
     options: [
-      'Immediately, as soon as the mistake is made',
-      'After each student finishes their thought',
-      'Only during the Feedback stage at the very end',
-      'Never — mistakes are completely ignored'
+      'Only breakout room timing',
+      'Only student satisfaction',
+      'Lesson structure, timing/feedback, breakout rooms AND student satisfaction',
+      'Nothing — everything needs fixing'
     ],
     correct: 2,
-    module: 'Structure & Timing'
+    module: WORKSHOP_MODULE
   },
   {
-    q: 'What is the main purpose of a "trigger" in a Speaking Club lesson?',
+    q: 'What is identified as "the key challenge" facing teachers?',
+    options: ['Lack of materials', 'Predictability', 'Low attendance', 'Poor grading'],
+    correct: 1,
+    module: WORKSHOP_MODULE
+  },
+  {
+    q: 'In the workshop\'s core idea, what role does structure play?',
+    options: ['A straitjacket', 'A skeleton', 'A cage', 'A script to read word-for-word'],
+    correct: 1,
+    module: WORKSHOP_MODULE
+  },
+  {
+    q: 'Which lesson stage is described as the teacher\'s "highest-leverage moment"?',
+    options: ['Feedback', 'Vocabulary', 'Warm-up & Lead-in', 'Discussion'],
+    correct: 2,
+    module: WORKSHOP_MODULE
+  },
+  {
+    q: 'Which opener is suggested instead of "How are you?"',
     options: [
-      'To signal when time is up for a stage',
-      'To create intrigue and launch discussion without revealing the topic directly',
-      'To test students\' grammar knowledge before the lesson',
-      'To introduce a list of new vocabulary words'
+      'A hot take / surprising statement',
+      'A vocabulary check',
+      'An attendance check',
+      'A homework review'
+    ],
+    correct: 0,
+    module: WORKSHOP_MODULE
+  },
+  {
+    q: 'In the Vocabulary block, what is recommended instead of a textbook definition?',
+    options: [
+      'Using your own real-life example',
+      'Reading the dictionary entry aloud',
+      'Skipping vocabulary entirely',
+      'Giving a written quiz'
+    ],
+    correct: 0,
+    module: WORKSHOP_MODULE
+  },
+  {
+    q: 'Which improv-theatre principle is taught for keeping discussions alive?',
+    options: ['"No, but..."', '"Yes, and..."', '"Stop and go"', '"Wait and see"'],
+    correct: 1,
+    module: WORKSHOP_MODULE
+  },
+  {
+    q: 'What is the key behaviour behind the "Yes, And..." principle?',
+    options: [
+      'Move quickly to the next question',
+      'Acknowledge, react, then redirect',
+      'Ignore the student\'s answer',
+      'Repeat the question word-for-word'
     ],
     correct: 1,
-    module: 'Live Triggers'
+    module: WORKSHOP_MODULE
   },
   {
-    q: 'Do students need to prepare the lesson topic in advance?',
+    q: 'Which of these is NOT one of the four Personalisation Toolkit techniques?',
     options: [
-      'Yes, always — preparation is required',
-      'Yes, but only for B2+ levels',
-      'No — students arrive with zero preparation',
-      'Only for A1–A2 beginners'
+      'Remember the details',
+      'Build bridges between students',
+      'Use a stricter rulebook',
+      'Celebrate the unexpected'
     ],
     correct: 2,
-    module: 'What Is a Speaking Club?'
+    module: WORKSHOP_MODULE
   },
   {
-    q: 'What is the teacher\'s main role during the Main Discussion stage?',
+    q: 'In the Before/After example, what replaces "Today we\'ll talk about travel" in the "After" version?',
     options: [
-      'Explain grammar structures and give examples',
-      'Correct every mistake and show the right form',
-      'Keep the conversation flowing and ensure equal participation',
-      'Translate difficult words into Ukrainian'
-    ],
-    correct: 2,
-    module: 'Structure & Timing'
-  },
-  {
-    q: 'Which behaviour describes the "Silent One" student type?',
-    options: [
-      'Talks non-stop and interrupts others',
-      'Doesn\'t speak unless directly asked; gives very short answers',
-      'Switches to Ukrainian (L1) instead of English',
-      'Arrives late and leaves early every lesson'
+      'A grammar explanation',
+      'A quick vote / hot take',
+      'A homework check',
+      'A video clip'
     ],
     correct: 1,
-    module: 'Group Management'
+    module: WORKSHOP_MODULE
   },
   {
-    q: 'A student goes completely silent during the Main Discussion. What is the best response?',
-    options: [
-      'Ignore them and continue with other students',
-      'Translate the question into Ukrainian',
-      'Use a gentle, direct re-engagement question addressed to them',
-      'End the discussion stage early'
-    ],
-    correct: 2,
-    module: 'Emergency FAQ'
-  },
-  {
-    q: 'What is the total length of a standard Speaking Club lesson?',
-    options: ['45 minutes', '60 minutes', '90 minutes', '120 minutes'],
+    q: 'How long is the "Hot Take Roulette" chat activity?',
+    options: ['1 minute', '3 minutes', '5 minutes', '10 minutes'],
     correct: 1,
-    module: 'Structure & Timing'
+    module: WORKSHOP_MODULE
   },
   {
-    q: 'Which of these is NOT a valid trigger type in the Study Less methodology?',
+    q: 'What does the "Autopilot Confession" activity ask teachers to identify?',
     options: [
-      'Surprising Fact',
-      'Quote / Statement',
-      'Grammar Exercise',
-      'Scenario / Dilemma'
+      'Their favourite student',
+      'Which lesson stage they personally run on autopilot most',
+      'Their weakest grammar topic',
+      'Errors in their lesson plan'
     ],
+    correct: 1,
+    module: WORKSHOP_MODULE
+  },
+  {
+    q: 'In Mini-Groups Round 1, what do groups do with a real "autopilot" script?',
+    options: [
+      'Delete it',
+      'Rewrite it using 1–2 Flexibility Map techniques',
+      'Translate it into another language',
+      'Memorize it word-for-word'
+    ],
+    correct: 1,
+    module: WORKSHOP_MODULE
+  },
+  {
+    q: 'What is the focus of the "Case Clinic" activity?',
+    options: [
+      'Diagnosing which stage is "on autopilot" and proposing one fix',
+      'Writing a brand-new syllabus',
+      'Grading a real student test',
+      'Reviewing attendance records'
+    ],
+    correct: 0,
+    module: WORKSHOP_MODULE
+  },
+  {
+    q: 'According to "Your One Thing," how many micro-interventions should a teacher try at once?',
+    options: ['As many as possible', 'Two', 'One', 'Five'],
     correct: 2,
-    module: 'Live Triggers'
+    module: WORKSHOP_MODULE
   },
   {
-    type: 'open',
-    q: 'Describe a real situation from your teaching experience: a student went completely silent during the Main Discussion. What exactly did you say or do?',
-    placeholder: 'Write your answer here... (minimum 20 words)',
-    minWords: 20,
-    module: 'Emergency FAQ'
+    type: 'fillblank',
+    q: 'Complete the quote: "Structure is the skeleton, not the ______."',
+    correct: 'straitjacket',
+    module: WORKSHOP_MODULE
   },
   {
-    type: 'open',
-    q: 'How do you make sure all students get equal speaking time? Give a specific example from one of your actual lessons.',
-    placeholder: 'Write your answer here... (minimum 20 words)',
-    minWords: 20,
-    module: 'Structure & Timing'
+    type: 'fillblank',
+    q: 'Complete the name of the improv-based technique from Block 3: "______, And…"',
+    correct: 'Yes',
+    module: WORKSHOP_MODULE
   },
   {
-    type: 'open',
-    q: 'Which trigger type do you use most often with your groups and why? Write the exact words you say to students at the very start of a lesson.',
-    placeholder: 'Write your answer here... (minimum 20 words)',
-    minWords: 20,
-    module: 'Live Triggers'
+    type: 'fillblank',
+    q: 'Complete the closing line: "Your students follow the structure. Your students fall in love with ______."',
+    correct: 'YOU',
+    module: WORKSHOP_MODULE
+  },
+  {
+    type: 'fillblank',
+    q: 'Complete the closing message: "Share, reflect, ______ — together."',
+    correct: 'iterate',
+    module: WORKSHOP_MODULE
+  },
+  {
+    type: 'fillblank',
+    q: 'Complete Personalisation Toolkit technique #1: "Remember the ______."',
+    correct: 'details',
+    module: WORKSHOP_MODULE
   }
 ];
 
 const TEST_RECOMMENDATIONS = {
   excellent: {
     title: 'Excellent result!',
-    subtitle: 'You know the methodology very well. Keep it up.',
+    subtitle: 'You know the workshop material very well. Keep it up.',
     color: '#10B981',
     bg: '#F0FDF4',
     border: '#10B981',
     reco: [
-      'Focus on building your personal trigger bank — collect phrases that work for your groups.',
-      'Practice using the timer during Main Discussion to ensure equal speaking time.',
-      'Consider mentoring newer teachers using the Emergency FAQ scenarios.'
+      'Try the Flexibility Map techniques on a script you personally run on autopilot.',
+      'Use the "Yes, And..." principle next time a discussion starts to die out.',
+      'Share what you learned with a colleague who hasn\'t taken the workshop yet.'
     ]
   },
   good: {
@@ -3879,9 +3931,9 @@ const TEST_RECOMMENDATIONS = {
     bg: '#EFF6FF',
     border: '#3B82F6',
     reco: [
-      'Review the Lesson Structure & Timing guide (Module 2) to strengthen your timing instincts.',
-      'Practice the Feedback stage format — it\'s easy to skip or rush.',
-      'Re-read the Live Triggers module and try using a different trigger type each lesson.'
+      'Re-watch the Block 3 segment on the "Yes, And..." improv principle.',
+      'Review the four Personalisation Toolkit techniques before your next lesson.',
+      'Try opening your next lesson with a hot take instead of "How are you?"'
     ]
   },
   ok: {
@@ -3891,23 +3943,21 @@ const TEST_RECOMMENDATIONS = {
     bg: '#FFFBEB',
     border: '#F59E0B',
     reco: [
-      'Re-read Lesson Structure & Timing (Module 2) — timing is the foundation of every lesson.',
-      'Study the stage-by-stage details inside it carefully, especially error correction rules.',
-      'Work through all 10 Emergency FAQ scenarios before your next lesson.',
-      'Ask a colleague or admin to observe one of your lessons and give feedback.'
+      'Re-watch the workshop recording, focusing on the Before/After example.',
+      'Practice the Case Clinic exercise: pick one stage you run on autopilot and propose one fix.',
+      'Ask a colleague or admin who attended the workshop to walk you through the Flexibility Map.'
     ]
   },
   needsWork: {
     title: 'Let\'s start from basics',
-    subtitle: 'We recommend going through all modules before teaching.',
+    subtitle: 'We recommend re-watching the full workshop before your next lesson.',
     color: '#EF4444',
     bg: '#FEF2F2',
     border: '#EF4444',
     reco: [
-      'Read modules 1–5 in order before your next lesson.',
-      'Pay special attention to: error correction timing, the teacher\'s role, and trigger types.',
-      'Shadow an experienced teacher for 2–3 lessons to see the methodology in action.',
-      'Retake this test after studying — aim for 8+ before teaching independently.'
+      'Re-watch the full "Structure + Soul" workshop recording from the start.',
+      'Pay special attention to: the role of structure, the "Yes, And..." principle, and the Personalisation Toolkit.',
+      'Retake this test after re-watching — aim for 16+ before applying it live.'
     ]
   }
 };
@@ -3961,9 +4011,22 @@ function testLogout() {
   initGeminiUI();
 }
 
+// Returns true if a recorded answer object is correct, regardless of question type (mc / fillblank).
+function testIsAnswerCorrect(a) {
+  if (a.type === 'open') return false;
+  if (a.type === 'fillblank') return (a.text || '').trim().toLowerCase() === (a.correct || '').trim().toLowerCase();
+  return a.selected === a.correct;
+}
+// Returns { yours, correctText } display strings for a recorded answer, regardless of type.
+function testAnswerDisplay(a) {
+  if (a.type === 'open') return { yours: a.text || '—', correctText: '' };
+  if (a.type === 'fillblank') return { yours: a.text || '—', correctText: a.correct };
+  return { yours: a.options ? a.options[a.selected] : '—', correctText: a.options ? a.options[a.correct] : '' };
+}
+
 function testCheckDoneCards() {
   if (!_teacher) return;
-  const docId = _teacher.email.replace(/[^a-z0-9]/gi, '_') + '_test1';
+  const docId = _teacher.email.replace(/[^a-z0-9]/gi, '_') + '_test2';
   db.collection('test_results').doc(docId).get().then(doc => {
     if (doc.exists) _markTestDone(doc.data());
   }).catch(() => {});
@@ -3972,12 +4035,13 @@ function testCheckDoneCards() {
 function _markTestDone(done) {
   const card = document.getElementById('test-card-1');
   if (!card) return;
+  const mcTotal = TEST_QUESTIONS.filter(q => q.type !== 'open').length;
   const existing = card.querySelector('.test-done-badge');
   if (!existing) {
     const meta = card.querySelector('.test-card-meta');
     const badge = document.createElement('span');
     badge.className = 'test-done-badge';
-    badge.textContent = `✓ Score: ${done.score}/10`;
+    badge.textContent = `✓ Score: ${done.score}/${mcTotal}`;
     meta.appendChild(badge);
   }
   card.classList.add('done');
@@ -3995,13 +4059,14 @@ function renderMyAnswers(result) {
     : (result.reviews || {});
 
   const mcHtml = mcAnswers.map((a, i) => {
-    const isRight = a.selected === a.correct;
+    const isRight = testIsAnswerCorrect(a);
+    const disp = testAnswerDisplay(a);
     return `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;font-size:13px;line-height:1.5;">
       <span>${isRight ? '✅' : '❌'}</span>
       <div>
         <div style="font-weight:600;margin-bottom:2px;">${i+1}. ${a.q}</div>
-        <div style="color:${isRight?'#059669':'#EF4444'};">${a.options[a.selected]}</div>
-        ${!isRight ? `<div style="color:#059669;font-size:12px;">Correct: ${a.options[a.correct]}</div>` : ''}
+        <div style="color:${isRight?'#059669':'#EF4444'};">${disp.yours}</div>
+        ${!isRight ? `<div style="color:#059669;font-size:12px;">Correct: ${disp.correctText}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -4088,6 +4153,10 @@ function testRenderQuestion() {
         ta.style.animation = 'shake .3s ease';
       });
     }, 50);
+  } else if (q.type === 'fillblank') {
+    optionsEl.innerHTML = `
+      <input type="text" id="test-fillblank-answer" class="test-open-textarea" style="height:auto;padding:14px 16px;" placeholder="Type your answer here..." oninput="testHandleFillInput(this)" autocomplete="off">`;
+    document.getElementById('test-next-btn').style.display = 'none';
   } else {
     optionsEl.innerHTML = q.options.map((opt, i) =>
       `<button class="test-option" id="test-opt-${i}" onclick="testSelectAnswer(${i})">${opt}</button>`
@@ -4099,6 +4168,15 @@ function testHandleOpenInput(ta) {
   const words = ta.value.trim().split(/\s+/).filter(w => w.length > 0).length;
   document.getElementById('test-word-count').textContent = `${words} words`;
   testState.answered = true;
+}
+
+function testHandleFillInput(input) {
+  const hasText = input.value.trim().length > 0;
+  testState.answered = hasText;
+  const btn = document.getElementById('test-next-btn');
+  btn.style.display = hasText ? 'block' : 'none';
+  const isLast = testState.currentQ === TEST_QUESTIONS.length - 1;
+  btn.textContent = isLast ? 'See results →' : 'Next →';
 }
 
 function testSelectAnswer(idx) {
@@ -4131,6 +4209,10 @@ function testNext() {
       pasteDetected: testState.pasteDetected,
       module: q.module
     });
+  } else if (q.type === 'fillblank') {
+    const input = document.getElementById('test-fillblank-answer');
+    const text = input ? input.value.trim() : '';
+    testState.answers.push({ type: 'fillblank', q: q.q, text, correct: q.correct, module: q.module });
   }
   const nextIdx = testState.currentQ + 1;
   // Show warning screen before first open question
@@ -4150,27 +4232,28 @@ function testNext() {
 }
 
 function testShowResults() {
-  const score = testState.answers.filter(a => a.type !== 'open' && a.selected === a.correct).length;
+  const score = testState.answers.filter(a => a.type !== 'open' && testIsAnswerCorrect(a)).length;
   const mcTotal = TEST_QUESTIONS.filter(q => q.type !== 'open').length;
   const name  = _teacher?.name  || 'Teacher';
   const email = _teacher?.email || '';
 
   const resultEntry = {
-    testId: 1,
+    testId: 2,
     name, email, score,
     date: new Date().toLocaleDateString('uk-UA'),
     timestamp: new Date().toISOString(),
     answers: testState.answers
   };
   // Firestore only — single doc per teacher per test
-  const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test1';
+  const docId = email.replace(/[^a-z0-9]/gi, '_') + '_test2';
   db.collection('test_results').doc(docId).set(resultEntry).catch(e => console.warn('Firestore save error:', e));
 
-  // Pick level
+  // Pick level (out of mcTotal questions, scaled proportionally)
+  const pct = mcTotal ? score / mcTotal : 0;
   let level;
-  if (score >= 9) level = 'excellent';
-  else if (score >= 7) level = 'good';
-  else if (score >= 5) level = 'ok';
+  if (pct >= 0.9) level = 'excellent';
+  else if (pct >= 0.7) level = 'good';
+  else if (pct >= 0.5) level = 'ok';
   else level = 'needsWork';
   const reco = TEST_RECOMMENDATIONS[level];
 
@@ -4200,13 +4283,14 @@ function testShowResults() {
         </div>
       </div>`;
     }
-    const isRight = a.selected === a.correct;
+    const isRight = testIsAnswerCorrect(a);
+    const disp = testAnswerDisplay(a);
     return `<div class="test-answer-row">
       <span class="test-ans-icon">${isRight ? '✅' : '❌'}</span>
       <div class="test-ans-body">
         <div class="test-ans-q">${i + 1}. ${a.q}</div>
-        ${!isRight ? `<div class="test-ans-yours">Your answer: ${a.options[a.selected]}</div>
-        <div class="test-ans-correct">Correct: ${a.options[a.correct]}</div>` : ''}
+        ${!isRight ? `<div class="test-ans-yours">Your answer: ${disp.yours}</div>
+        <div class="test-ans-correct">Correct: ${disp.correctText}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -4229,9 +4313,11 @@ function renderAdminList(results) {
     document.getElementById('test-admin-list').innerHTML = '<p style="font-size:13px;color:var(--muted);">No results yet.</p>';
     return;
   }
+  const mcTotal = TEST_QUESTIONS.filter(q => q.type !== 'open').length;
   results.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
   document.getElementById('test-admin-list').innerHTML = results.map((r, i) => {
-    const scoreColor = r.score>=9?'#10B981':r.score>=7?'#3B82F6':r.score>=5?'#F59E0B':'#EF4444';
+    const pct = mcTotal ? r.score / mcTotal : 0;
+    const scoreColor = pct>=0.9?'#10B981':pct>=0.7?'#3B82F6':pct>=0.5?'#F59E0B':'#EF4444';
     const pasteCount = (r.answers || []).filter(a => a.pasteDetected).length;
     const answersHtml = (r.answers || []).map((a, qi) => {
       if (a.type === 'open') {
@@ -4244,7 +4330,7 @@ function renderAdminList(results) {
               <div style="display:flex;align-items:center;gap:8px;">
                 <label style="font-size:12px;font-weight:600;color:var(--muted);">Score:</label>
                 <input type="number" id="rev-score-${openIdx}" min="1" max="10" placeholder="1–10" style="width:64px;padding:6px 8px;border:1.5px solid #E5E7EB;border-radius:7px;font-size:13px;font-weight:700;outline:none;">
-                <button onclick="saveAdminReview('${r.email.replace(/[^a-z0-9]/gi,'_')}_test1', ${openIdx}, this)" style="padding:6px 14px;background:#3B82F6;color:white;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Save</button>
+                <button onclick="saveAdminReview('${r.email.replace(/[^a-z0-9]/gi,'_')}_test2', ${openIdx}, this)" style="padding:6px 14px;background:#3B82F6;color:white;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Save</button>
               </div>
             </div>`;
         return `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #F3F4F6;font-size:12.5px;line-height:1.5;">
@@ -4257,15 +4343,16 @@ function renderAdminList(results) {
           </div>
         </div>`;
       }
-      const isRight = a.selected === a.correct;
+      const isRight = testIsAnswerCorrect(a);
+      const disp = testAnswerDisplay(a);
       return `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #F3F4F6;font-size:12.5px;line-height:1.5;">
         <span style="flex-shrink:0;margin-top:1px;">${isRight ? '✅' : '❌'}</span>
         <div>
           <div style="font-weight:600;color:#111827;margin-bottom:2px;">${qi+1}. ${a.q}</div>
           ${!isRight
-            ? `<div style="color:#EF4444;">Відповів: ${a.options[a.selected]}</div>
-               <div style="color:#059669;font-weight:600;">Правильно: ${a.options[a.correct]}</div>`
-            : `<div style="color:#059669;">${a.options[a.correct]}</div>`
+            ? `<div style="color:#EF4444;">Відповів: ${disp.yours}</div>
+               <div style="color:#059669;font-weight:600;">Правильно: ${disp.correctText}</div>`
+            : `<div style="color:#059669;">${disp.correctText}</div>`
           }
         </div>
       </div>`;
@@ -4280,7 +4367,7 @@ function renderAdminList(results) {
           <div style="font-size:12px;color:var(--muted);">${r.email} · ${r.date}</div>
         </div>
         ${pasteCount > 0 ? `<div style="font-size:11px;font-weight:700;color:#EF4444;background:#FEF2F2;border:1px solid #FECACA;border-radius:20px;padding:3px 9px;">⚠️ ${pasteCount} paste</div>` : ''}
-        <div style="font-size:13px;font-weight:700;color:${scoreColor};">${r.score}/10</div>
+        <div style="font-size:13px;font-weight:700;color:${scoreColor};">${r.score}/${mcTotal}</div>
         <span class="adm-arrow" style="color:var(--muted);font-size:13px;transition:transform .2s;flex-shrink:0;">›</span>
       </div>
       <div style="display:none;padding:0 16px 16px;border-top:1px solid var(--border);">
@@ -4339,7 +4426,7 @@ function saveAdminReview(docId, openIdx, btnEl) {
 
 function testCheckReview() {
   if (!_teacher) return;
-  const docId = _teacher.email.replace(/[^a-z0-9]/gi, '_') + '_test1';
+  const docId = _teacher.email.replace(/[^a-z0-9]/gi, '_') + '_test2';
   db.collection('test_results').doc(docId).get().then(doc => {
     if (!doc.exists) return;
     const data = doc.data();
@@ -4386,8 +4473,46 @@ function testShowAdmin() {
   listEl.innerHTML = '<p style="font-size:13px;color:var(--muted);">Loading…</p>';
 
   db.collection('test_results').get()
-    .then(snapshot => renderAdminList(snapshot.docs.map(d => d.data())))
+    .then(snapshot => renderAdminList(snapshot.docs.map(d => d.data()).filter(r => r.testId === 2)))
     .catch(() => renderAdminList([]));
+}
+
+function adminDownloadCSV() {
+  db.collection('test_results').get().then(snapshot => {
+    const results = snapshot.docs.map(d => d.data()).filter(r => r.testId === 2);
+    if (!results.length) { alert('No results yet.'); return; }
+    results.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+
+    const headers = ['Name', 'Email', 'Score', 'Out of', 'Date'];
+    TEST_QUESTIONS.forEach((q, i) => headers.push(`Q${i + 1}: ${q.q}`));
+
+    const mcTotal = TEST_QUESTIONS.filter(q => q.type !== 'open').length;
+    const rows = [headers];
+    results.forEach(r => {
+      const row = [r.name, r.email, r.score, mcTotal, r.date];
+      TEST_QUESTIONS.forEach((q, i) => {
+        const a = (r.answers || [])[i];
+        if (!a) { row.push(''); return; }
+        row.push(testAnswerDisplay(a).yours);
+      });
+      rows.push(row);
+    });
+
+    const csv = rows.map(row => row.map(cell => {
+      const s = String(cell ?? '');
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(',')).join('\n');
+
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `structure-soul-test-results-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }).catch(e => alert('Error: ' + e.message));
 }
 
 
@@ -4695,7 +4820,7 @@ function _onAuthReady() {
     _loadNotifications();
   }).catch(() => { initGeminiUI(); _loadNotifications(); });
   testCheckDoneCards();
-  const isAdmin = email.toLowerCase() === 'admnstudyless@gmail.com';
+  const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
   document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
   if (!isAdmin) testCheckReview();
   testShowScreen('test-screen-list');
@@ -4704,7 +4829,7 @@ function _onAuthReady() {
 function testInitModule() {
   if (_teacher) {
     _renderUserBlock(_teacher.name, _teacher.email);
-    const isAdmin = _teacher.email.toLowerCase() === 'admnstudyless@gmail.com';
+    const isAdmin = ADMIN_EMAILS.includes(_teacher.email.toLowerCase());
     document.getElementById('test-admin-btn-wrap').style.display = isAdmin ? 'block' : 'none';
     testCheckDoneCards();
     if (!isAdmin) testCheckReview();

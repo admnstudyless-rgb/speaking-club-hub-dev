@@ -1648,15 +1648,40 @@
         <a href="assets/speaking-club-timer.zip" download class="btn btn-primary" style="display:inline-block; text-decoration:none;">⬇️ Download Timer (.zip)</a>
 
         <div style="margin-top: 20px;">
-          <p style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px;">How to install (Chrome, Edge, Brave — same steps for all):</p>
+          <p style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px;">How to install — pick your browser:</p>
+          <p style="font-size: 12.5px; color: var(--muted); margin-bottom: 10px;">First, download and unzip the file above and save the folder somewhere permanent (e.g. Documents) — don't move or delete it after installing.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <button class="btn" style="background:#EFF6FF; color:#1D4ED8; border:1.5px solid #BFDBFE;" onclick="showInstallGuide('chrome')">🟢 Chrome</button>
+            <button class="btn" style="background:#EFF6FF; color:#1D4ED8; border:1.5px solid #BFDBFE;" onclick="showInstallGuide('edge')">🔵 Edge</button>
+            <button class="btn" style="background:#FFF7ED; color:#C2410C; border:1.5px solid #FED7AA;" onclick="showInstallGuide('firefox')">🦊 Firefox</button>
+            <button class="btn" style="background:#F5F3FF; color:#6D28D9; border:1.5px solid #DDD6FE;" onclick="showInstallGuide('safari')">🧭 Safari</button>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <p style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px;">First launch (after installing, any browser):</p>
           <ol style="font-size: 13.5px; color: var(--muted); padding-left: 20px; line-height: 1.7;">
-            <li>Download the file above and unzip it.</li>
-            <li>Open <code>chrome://extensions</code> in your browser.</li>
-            <li>Turn on <strong>Developer mode</strong> (top-right toggle).</li>
-            <li>Click <strong>Load unpacked</strong> and select the unzipped folder.</li>
-            <li>Open any Google Slides presentation — the timer icon appears in your toolbar.</li>
+            <li>Open any Google Slides presentation.</li>
+            <li>The timer widget appears automatically in the top-right corner.</li>
+            <li>Click ▶ to start. Enter Slideshow mode (Cmd+Enter on Mac / Ctrl+F5 on Windows) — the timer stays visible.</li>
+            <li>To hide or show it: click the extension icon in your toolbar and toggle "Timer is on / off."</li>
           </ol>
-          <p style="font-size: 12px; color: var(--muted); margin-top: 8px;"><strong>⚠️ Not available for Safari or Firefox</strong> — those browsers need a different extension format.</p>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <p style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px;">FAQ</p>
+          <div class="highlight-box" style="background:#FFFBEB; margin-bottom: 8px;">
+            <strong>The timer disappeared after restarting the browser?</strong><br>
+            <span style="font-size: 13px; color: var(--muted);">Go to <code>chrome://extensions</code> and make sure Speaking Club Timer is turned on. In Firefox, reload it via <code>about:debugging</code> each session.</span>
+          </div>
+          <div class="highlight-box" style="background:#FFFBEB; margin-bottom: 8px;">
+            <strong>Can I use it on multiple computers?</strong><br>
+            <span style="font-size: 13px; color: var(--muted);">Yes. Copy the unzipped folder to another computer and repeat the installation. Each user's settings are saved separately.</span>
+          </div>
+          <div class="highlight-box" style="background:#FFFBEB;">
+            <strong>I updated the extension files — how do I apply the changes?</strong><br>
+            <span style="font-size: 13px; color: var(--muted);">Go to <code>chrome://extensions</code>, find Speaking Club Timer, and click the refresh icon next to it.</span>
+          </div>
         </div>
 
         <div style="margin-top: 20px;">
@@ -3155,6 +3180,89 @@ function renderTexExamples(type, levelId) {
 function closeTriggerExamples(e) {
   if (e.target === document.getElementById('tex-overlay'))
     document.getElementById('tex-overlay').classList.remove('open');
+}
+
+// ── Timer Install Guide ─────────────────────────────────────────
+const installGuides = {
+  chrome: {
+    icon: '🟢', title: 'Install in Google Chrome',
+    steps: [
+      { label: 'Step 1 — Open extension settings', items: [
+        'Open Chrome',
+        'In the address bar type: <code>chrome://extensions</code> and press Enter',
+        'Turn on the <strong>Developer mode</strong> toggle (top-right corner)',
+      ]},
+      { label: 'Step 2 — Load the extension', items: [
+        'Click <strong>Load unpacked</strong>',
+        'Navigate to the unzipped <code>speaking-club-timer</code> folder',
+        'Select the folder and click Open — it appears in the list as Speaking Club Timer',
+      ]},
+      { label: 'Step 3 — Pin the icon', items: [
+        'Click the puzzle piece icon in the top-right corner of the browser',
+        'Find Speaking Club Timer and click the pin icon',
+        'The timer icon will appear in your browser toolbar',
+      ]},
+    ],
+  },
+  edge: {
+    icon: '🔵', title: 'Install in Microsoft Edge',
+    steps: [
+      { label: 'Edge is built on the same engine as Chrome — installation is nearly identical.', items: [
+        'Open Edge, type in the address bar: <code>edge://extensions</code> and press Enter',
+        'Turn on <strong>Developer mode</strong> (bottom-left)',
+        'Click <strong>Load unpacked</strong>',
+        'Select the unzipped <code>speaking-club-timer</code> folder and click Select Folder',
+        'Pin the icon via the extensions menu (puzzle piece)',
+      ]},
+    ],
+  },
+  firefox: {
+    icon: '🦊', title: 'Install in Firefox',
+    steps: [
+      { label: null, items: [
+        'Go to: <code>about:debugging#/runtime/this-firefox</code>',
+        'Click <strong>Load Temporary Add-on...</strong>',
+        'Navigate to the unzipped folder and select <code>manifest.json</code>',
+        'The extension activates immediately',
+      ]},
+    ],
+    note: '⚠️ In Firefox the extension is temporary and is removed when you close the browser. Reload it each session via the same steps.',
+  },
+  safari: {
+    icon: '🧭', title: 'Install in Safari (Mac only)',
+    steps: [
+      { label: 'Safari requires a one-time conversion using Xcode (Apple\'s free developer tool).', items: [
+        'Install Xcode from the Mac App Store (free, ~7 GB)',
+        'Open Terminal and run: <code>xcrun safari-web-extension-converter /path/to/speaking-club-timer</code>',
+        'Xcode opens with a ready-made Safari extension project — click Run',
+        'In Safari go to Settings → Advanced → enable "Show features for web developers"',
+        'Go to Settings → Extensions → turn on Speaking Club Timer',
+        'Allow the extension to run on docs.google.com',
+      ]},
+    ],
+    note: '⚠️ Requires a Mac. The conversion is done once — after that the extension works normally in Safari.',
+  },
+};
+
+function showInstallGuide(id) {
+  const data = installGuides[id];
+  if (!data) return;
+  document.getElementById('install-icon').textContent = data.icon;
+  document.getElementById('install-title').textContent = data.title;
+  const stepsHtml = data.steps.map(s => `
+    ${s.label ? `<p style="font-size:13px;font-weight:700;color:var(--text);margin:14px 0 8px;">${s.label}</p>` : ''}
+    <ol style="font-size:13.5px;color:var(--muted);padding-left:20px;line-height:1.7;margin:0;">
+      ${s.items.map(i => `<li>${i}</li>`).join('')}
+    </ol>
+  `).join('');
+  const noteHtml = data.note ? `<div class="highlight-box" style="background:#FFFBEB;margin-top:14px;"><span style="font-size:13px;color:var(--muted);">${data.note}</span></div>` : '';
+  document.getElementById('install-body').innerHTML = stepsHtml + noteHtml;
+  document.getElementById('install-overlay').classList.add('open');
+}
+
+function closeInstallGuide(e) {
+  if (e.target === document.getElementById('install-overlay'))
+    document.getElementById('install-overlay').classList.remove('open');
 }
 
 // ── Trigger Generator ─────────────────────────────────────────
@@ -5437,6 +5545,18 @@ function printLessonPlan() {
   win.print();
 }
 </script>
+
+<!-- Timer install guide modal — outside .section so it works regardless of active module -->
+<div class="tex-overlay" id="install-overlay" onclick="closeInstallGuide(event)">
+  <div class="tex-modal">
+    <div class="tex-header">
+      <div class="tex-icon" id="install-icon"></div>
+      <h3 id="install-title"></h3>
+      <button class="tex-close" onclick="document.getElementById('install-overlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="tex-body" id="install-body"></div>
+  </div>
+</div>
 
 <!-- Profile drawer — personal cabinet, slide-in from right -->
 <div class="profile-overlay" id="profile-overlay" onclick="if(event.target===this)closeProfile()"></div>

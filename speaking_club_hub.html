@@ -2777,7 +2777,7 @@
         <div style="max-width:520px;margin:0 auto;text-align:center;padding:20px 0;">
           <div style="width:64px;height:64px;background:#FEF2F2;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;">✍️</div>
           <h2 style="font-size:22px;font-weight:800;margin-bottom:12px;">Open questions</h2>
-          <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px;">The next 3 questions require a written answer based on your personal teaching experience.</p>
+          <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px;" id="test-open-warning-text">The next questions require a written answer based on your personal teaching experience.</p>
           <div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:14px;padding:20px 24px;text-align:left;margin-bottom:32px;">
             <div style="font-size:13px;font-weight:800;color:#DC2626;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">⛔ Important</div>
             <p style="font-size:14px;color:#7F1D1D;line-height:1.7;margin:0;">Write your answer <strong>independently and manually</strong>. A paste detector is active — if you try to paste text from any source, the answer field will be blocked and flagged for admin review.</p>
@@ -4353,7 +4353,7 @@ function testRenderQuestion() {
     }, 50);
   } else if (q.type === 'fillblank') {
     optionsEl.innerHTML = `
-      <input type="text" id="test-fillblank-answer" class="test-open-textarea" style="height:auto;padding:14px 16px;" placeholder="Type your answer here..." oninput="testHandleFillInput(this)" autocomplete="off">`;
+      <input type="text" id="test-fillblank-answer" class="test-open-textarea" style="min-height:0;height:48px;padding:0 16px;" placeholder="Type your answer here..." oninput="testHandleFillInput(this)" autocomplete="off">`;
     document.getElementById('test-next-btn').style.display = 'none';
   } else {
     optionsEl.innerHTML = q.options.map((opt, i) =>
@@ -4601,7 +4601,7 @@ function saveAdminReview(docId, openIdx, btnEl) {
       notifPayload = {
         type: 'review_done',
         title: 'Your answers have been reviewed',
-        text: `Admin reviewed your open question answers for Test 1. Average score: ${Math.round(avg * 10) / 10}/10`,
+        text: `Admin reviewed your open question answers. Average score: ${Math.round(avg * 10) / 10}/10`,
         ts: new Date().toISOString(),
         read: false
       };

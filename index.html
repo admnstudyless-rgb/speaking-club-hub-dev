@@ -643,14 +643,14 @@
   .test-done-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: #D1FAE5; color: #065F46; }
 
   /* ── MODULE 10: TESTS / WORKSHOPS TAB TOGGLE ── */
-  .module10-tabs { display: flex; gap: 8px; margin-bottom: 28px; }
+  .module10-tabs { display: flex; gap: 10px; margin-bottom: 32px; }
   .module10-tab {
-    padding: 9px 18px; border-radius: 20px; border: 1.5px solid var(--border);
-    background: white; color: var(--muted); font-size: 13px; font-weight: 700;
+    padding: 14px 30px; border-radius: 12px; border: 2px solid var(--border);
+    background: white; color: var(--muted); font-size: 15px; font-weight: 800;
     cursor: pointer; font-family: inherit; transition: all .15s;
   }
   .module10-tab:hover { border-color: var(--blue); color: var(--text); }
-  .module10-tab.active { background: var(--blue); border-color: var(--blue); color: white; }
+  .module10-tab.active { background: var(--blue); border-color: var(--blue); color: white; box-shadow: 0 4px 14px rgba(59,130,246,.3); }
 
   /* ── WORKSHOPS ── */
   .workshop-slides-wrap { position: relative; width: 100%; padding-top: 60%; border-radius: 14px; overflow: hidden; border: 1.5px solid var(--border); margin-bottom: 10px; }
@@ -2692,11 +2692,11 @@
       </div>
 
       <div class="module10-tabs">
-        <button class="module10-tab active" id="module10-tab-tests-btn" onclick="switchModule10Tab('tests')">Tests</button>
-        <button class="module10-tab" id="module10-tab-workshops-btn" onclick="switchModule10Tab('workshops')">Workshops</button>
+        <button class="module10-tab active" id="module10-tab-workshops-btn" onclick="switchModule10Tab('workshops')">Workshops</button>
+        <button class="module10-tab" id="module10-tab-tests-btn" onclick="switchModule10Tab('tests')">Tests</button>
       </div>
 
-      <div id="module10-tests-content">
+      <div id="module10-tests-content" style="display:none;">
 
       <!-- SCREEN 1: Sign in required -->
       <div class="test-screen active" id="test-screen-register">
@@ -2840,7 +2840,7 @@
 
       </div>
       <!-- ── WORKSHOPS TAB ── -->
-      <div id="module10-workshops-content" style="display:none;">
+      <div id="module10-workshops-content">
 
         <div class="test-list" id="workshop-list-screen">
           <div class="test-card" id="workshop-card-1" onclick="showWorkshop(1)">
@@ -2911,7 +2911,7 @@
             </button>
             <div class="wtask-body">
               <div class="wtask-divider"></div>
-              <p class="wtask-intro">Work in pairs. One person plays the "student" and reads the unexpected answer below. The other practises Yes, And… — acknowledge what they said, react genuinely, then redirect with a follow-up question. Swap roles after each prompt.</div>
+              <p class="wtask-intro">Work in pairs. One person plays the "student" and reads the unexpected answer below. The other practises Yes, And… — acknowledge what they said, react genuinely, then redirect with a follow-up question. Swap roles after each prompt.</p>
 
               <div class="wtask-stage">
                 <div class="wtask-stage-label">Prompt 1</div>
@@ -3029,7 +3029,7 @@ function showModule(num) {
   document.getElementById('topbar-title').textContent = titles[num];
   closeSidebar();
   window.scrollTo(0,0);
-  if (num === 10) { switchModule10Tab('tests'); testInitModule(); }
+  if (num === 10) { switchModule10Tab('workshops'); testInitModule(); }
 }
 
 // ── FAQ & Student Type Accordions ────────────────────────────

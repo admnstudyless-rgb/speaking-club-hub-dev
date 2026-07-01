@@ -4826,7 +4826,7 @@ function profileSignIn() {
     .catch(err => {
       btn.disabled = false;
       btn.textContent = 'Send magic link →';
-      errEl.textContent = 'Could not send email. Check the address and try again.';
+      errEl.textContent = 'DEBUG: ' + (err.code || 'no-code') + ' — ' + (err.message || 'no-message');
       errEl.style.display = 'block';
       console.error(err);
     });

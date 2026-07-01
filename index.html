@@ -4188,8 +4188,8 @@ function testLogout() {
   _gemini.key = null;
   _notifUnsubs.forEach(u => u());
   _notifUnsubs = [];
-  localStorage.removeItem('emailForSignIn');
-  localStorage.removeItem('_pendingName');
+  localStorage.removeItem('teacherEmail');
+  localStorage.removeItem('teacherName');
   // Reset all admin/personal UI
   document.getElementById('test-admin-section').style.display = 'none';
   document.getElementById('test-admin-list').innerHTML = '';
@@ -4714,35 +4714,6 @@ function adminDownloadCSV() {
 }
 
 
-// ── Firebase Auth: complete email link sign-in ───────────────
-function _completeEmailSignIn() {
-  if (!auth.isSignInWithEmailLink(window.location.href)) return;
-
-  let email = localStorage.getItem('emailForSignIn');
-  if (!email) {
-    email = window.prompt('Please confirm your email address to finish signing in:');
-  }
-  if (!email) return;
-
-  auth.signInWithEmailLink(email, window.location.href)
-    .then(result => {
-      window.history.replaceState({}, document.title, window.location.pathname);
-      const user = result.user;
-      // Consume the pending name (set on same device during registration)
-      const name = localStorage.getItem('_pendingName') || email.split('@')[0];
-      localStorage.removeItem('emailForSignIn');
-      localStorage.removeItem('_pendingName');
-      // Persist name to Firestore so it's available on any device
-      db.collection('users').doc(user.uid).set({ name, email: user.email }, { merge: true }).catch(() => {});
-      _teacher = { name, email: user.email, uid: user.uid };
-      _onAuthReady();
-    })
-    .catch(err => {
-      console.error('Sign-in error:', err);
-      alert('The verification link has expired or already been used. Please request a new one.');
-    });
-}
-
 // ── Profile Drawer ────────────────────────────────────────────
 function openProfile() {
   document.getElementById('profile-overlay').classList.add('open');
@@ -4787,8 +4758,6 @@ function _updateProfileDrawer() {
   } else {
     signedOut.style.display = 'block';
     signedIn.style.display = 'none';
-    // Reset to sign-in form (not email-sent screen)
-    profileBackToSignIn();
   }
 }
 
@@ -4806,37 +4775,28 @@ function profileSignIn() {
   }
 
   btn.disabled = true;
-  btn.textContent = 'Sending…';
+  btn.textContent = 'Signing in…';
 
-  const actionCodeSettings = {
-    url: window.location.origin + window.location.pathname,
-    handleCodeInApp: true,
-  };
+  const normalizedEmail = email.toLowerCase();
+  const uid = _emailKey(normalizedEmail);
 
-  auth.sendSignInLinkToEmail(email, actionCodeSettings)
+  (auth.currentUser ? Promise.resolve() : auth.signInAnonymously())
+    .then(() => db.collection('users').doc(uid).set({ name, email: normalizedEmail }, { merge: true }))
     .then(() => {
-      localStorage.setItem('emailForSignIn', email);
-      localStorage.setItem('_pendingName', name);
-      document.getElementById('profile-email-sent-addr').textContent = email;
-      document.getElementById('profile-signin-form').style.display = 'none';
-      document.getElementById('profile-email-sent').style.display = 'block';
+      localStorage.setItem('teacherEmail', normalizedEmail);
+      localStorage.setItem('teacherName', name);
+      _teacher = { name, email: normalizedEmail, uid };
       btn.disabled = false;
-      btn.textContent = 'Send magic link →';
+      btn.textContent = 'Sign in →';
+      _onAuthReady();
     })
     .catch(err => {
       btn.disabled = false;
-      btn.textContent = 'Send magic link →';
-      errEl.textContent = 'Could not send email. Check the address and try again.';
+      btn.textContent = 'Sign in →';
+      errEl.textContent = 'Could not sign in. Please try again.';
       errEl.style.display = 'block';
       console.error(err);
     });
-}
-
-function profileBackToSignIn() {
-  const form = document.getElementById('profile-signin-form');
-  const sent = document.getElementById('profile-email-sent');
-  if (form) form.style.display = 'block';
-  if (sent) sent.style.display = 'none';
 }
 
 function saveProfileName() {
@@ -5034,57 +4994,59 @@ function testInitModule() {
     testShowScreen('test-screen-list');
     return;
   }
-  // Wait for Firebase Auth to restore session (cross-device)
-  const unsubscribe = auth.onAuthStateChanged(user => {
-    unsubscribe();
-    if (user && user.email) {
-      db.collection('users').doc(user.uid).get()
-        .then(doc => {
-          const name = (doc.exists && doc.data().name) ? doc.data().name : user.email.split('@')[0];
-          _teacher = { name, email: user.email, uid: user.uid };
-          _onAuthReady();
-        })
-        .catch(() => {
-          _teacher = { name: user.email.split('@')[0], email: user.email, uid: user.uid };
-          _onAuthReady();
-        });
+  // Wait for the session restore from localStorage (started on page load)
+  (_authRestorePromise || Promise.resolve()).then(() => {
+    if (_teacher) {
+      _onAuthReady();
     } else {
       testShowScreen('test-screen-register');
     }
   });
 }
 
-// Init on load
-function _initGlobalAuth() {
-  const unsub = auth.onAuthStateChanged(user => {
-    unsub();
-    if (!user || !user.email) { _updateTopbarProfile(); return; }
-    // Set teacher from Auth immediately (no Firestore wait)
-    if (!_teacher) {
-      _teacher = { name: user.email.split('@')[0], email: user.email, uid: user.uid };
-    }
-    _updateTopbarProfile();
-    // Enrich with Firestore data
-    db.collection('users').doc(user.uid).get().then(doc => {
+// ── Session restore: identify returning teacher from localStorage ──
+let _authRestorePromise = null;
+
+function _restoreTeacherSession() {
+  const storedEmail = localStorage.getItem('teacherEmail');
+  const storedName = localStorage.getItem('teacherName');
+  if (!storedEmail) return Promise.resolve(null);
+  const uid = _emailKey(storedEmail);
+
+  return (auth.currentUser ? Promise.resolve() : auth.signInAnonymously())
+    .then(() => db.collection('users').doc(uid).get())
+    .then(doc => {
       const data = doc.exists ? doc.data() : {};
-      if (data.name) _teacher.name = data.name;
+      _teacher = { name: data.name || storedName || storedEmail.split('@')[0], email: storedEmail, uid };
       if (data.geminiKey) _gemini.key = data.geminiKey;
       if (data.pexelsKey) _pexelsKey = data.pexelsKey;
       if (data.pixabayKey) _pixabayKey = data.pixabayKey;
       if (data.hfToken) _hfToken = data.hfToken;
       if (data.seenAnnouncements) _teacher._seenAnnouncements = data.seenAnnouncements;
-      _updateTopbarProfile();
+      return _teacher;
+    })
+    .catch(() => {
+      _teacher = { name: storedName || storedEmail.split('@')[0], email: storedEmail, uid };
+      return _teacher;
+    });
+}
+
+// Init on load
+function _initGlobalAuth() {
+  _authRestorePromise = _restoreTeacherSession().then(teacher => {
+    _updateTopbarProfile();
+    if (teacher) {
       initGeminiUI();
       initPexelsUI();
       initPixabayUI();
       _loadNotifications();
-    }).catch(() => {});
+    }
+    return teacher;
   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   initGeminiUI();
-  _completeEmailSignIn();
   _initGlobalAuth();
 });
 
@@ -5901,7 +5863,7 @@ function printLessonPlan() {
         <div style="text-align:center;margin-bottom:24px;">
           <div style="width:64px;height:64px;background:linear-gradient(135deg,#EFF6FF,#E0E7FF);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;">👤</div>
           <div style="font-size:16px;font-weight:800;color:#111827;margin-bottom:6px;">Sign in to Speaking Club Hub</div>
-          <div style="font-size:13px;color:#6B7280;line-height:1.6;">Enter your name and work email.<br>We'll send you a magic link — no password needed.</div>
+          <div style="font-size:13px;color:#6B7280;line-height:1.6;">Enter your name and work email to sign in.<br>No password needed.</div>
         </div>
         <div class="profile-section">
           <div style="display:flex;flex-direction:column;gap:14px;">
@@ -5914,29 +5876,11 @@ function printLessonPlan() {
               <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Work email</label>
               <input type="email" id="profile-email-input" placeholder="anna@studyless.com"
                 style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
-              <div style="font-size:11px;color:#9CA3AF;margin-top:5px;">Use your real email — you'll confirm it via link.</div>
             </div>
             <div id="profile-signin-error" style="display:none;font-size:13px;color:#EF4444;background:#FEF2F2;border-radius:8px;padding:10px 12px;"></div>
-            <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="profileSignIn()">Send magic link →</button>
+            <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="profileSignIn()">Sign in →</button>
           </div>
         </div>
-      </div>
-
-      <!-- Email sent sub-screen -->
-      <div id="profile-email-sent" style="display:none;text-align:center;">
-        <div style="width:72px;height:72px;background:#EFF6FF;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px;">📧</div>
-        <div style="font-size:18px;font-weight:800;color:#111827;margin-bottom:10px;">Check your email</div>
-        <p style="font-size:13px;color:#6B7280;line-height:1.7;margin-bottom:8px;">We sent a verification link to:</p>
-        <div id="profile-email-sent-addr" style="font-size:14px;font-weight:700;color:#1D4ED8;background:#EFF6FF;border-radius:10px;padding:10px 20px;display:inline-block;margin-bottom:20px;"></div>
-        <div style="background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:14px 16px;text-align:left;margin-bottom:24px;">
-          <div style="font-size:12px;color:#065F46;line-height:1.8;">
-            <div>1. Open your email inbox</div>
-            <div>2. Find the email from <strong>Speaking Club Hub</strong></div>
-            <div>3. Click the link — you'll be signed in automatically</div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:#9CA3AF;margin-bottom:16px;">Link expires in 1 hour. Check spam if you don't see it.</div>
-        <button onclick="profileBackToSignIn()" style="background:none;border:none;color:#6B7280;font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;">← Use a different email</button>
       </div>
 
     </div>

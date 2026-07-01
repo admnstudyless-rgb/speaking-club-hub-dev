@@ -855,7 +855,7 @@
     </a>
   </nav>
   <div class="sidebar-footer">
-    Version 1.2 · June 2026
+    Version 1.3 · July 2026
   </div>
 </aside>
 
@@ -4808,6 +4808,9 @@ function saveProfileName() {
   _renderUserBlock(newName, _teacher.email);
   _updateTopbarProfile();
   db.collection('users').doc(_teacher.uid).update({ name: newName }).catch(() => {});
+  // Keep the name on already-submitted test results in sync (name is stored denormalized there)
+  const testResultDocId = _teacher.email.replace(/[^a-z0-9]/gi, '_') + '_test2';
+  db.collection('test_results').doc(testResultDocId).update({ name: newName }).catch(() => {});
 }
 
 function profileSignOut() {

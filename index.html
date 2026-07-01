@@ -4827,11 +4827,27 @@ function _completeTeacherSignIn(user, fallbackName) {
   const uid = user.uid;
   const email = user.email;
   return db.collection('users').doc(uid).get().then(doc => {
-    const existingName = doc.exists ? doc.data().name : null;
-    const name = existingName || fallbackName || email.split('@')[0];
-    return db.collection('users').doc(uid).set({ name, email }, { merge: true }).then(() => {
-      _teacher = { name, email, uid };
-      _onAuthReady();
+    if (doc.exists) {
+      const name = doc.data().name || fallbackName || email.split('@')[0];
+      return db.collection('users').doc(uid).set({ name, email }, { merge: true }).then(() => {
+        _teacher = { name, email, uid };
+        if (doc.data().seenAnnouncements) _teacher._seenAnnouncements = doc.data().seenAnnouncements;
+        _onAuthReady();
+      });
+    }
+    // No account under this real uid yet — migrate data left over from the brief
+    // anonymous-auth sign-in (keyed by sanitized email instead of a real Firebase uid).
+    const legacyId = _emailKey(email);
+    return db.collection('users').doc(legacyId).get().then(legacyDoc => {
+      const legacyData = legacyDoc.exists ? legacyDoc.data() : {};
+      const name = legacyData.name || fallbackName || email.split('@')[0];
+      const merged = Object.assign({}, legacyData, { name, email });
+      return db.collection('users').doc(uid).set(merged, { merge: true }).then(() => {
+        if (legacyDoc.exists) db.collection('users').doc(legacyId).delete().catch(() => {});
+        _teacher = { name, email, uid };
+        if (merged.seenAnnouncements) _teacher._seenAnnouncements = merged.seenAnnouncements;
+        _onAuthReady();
+      });
     });
   });
 }
